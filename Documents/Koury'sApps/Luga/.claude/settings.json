@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/youssefmadkour/Documents/Koury''''sApps/**)",
+      "Read(//Users/youssefmadkour/.ssh/**)",
+      "Bash(ssh -T git@github.com)"
+    ],
+    "additionalDirectories": [
+      "/Users/youssefmadkour/Documents/KourysApps/Luga/lib/core/models"
+    ]
+  }
+}
