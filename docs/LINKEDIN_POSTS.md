@@ -43,7 +43,7 @@ CatalystMD screens 15 candidates against KRAS G12C in minutes. The same screenin
 
 57 compounds. 4 diseases. Same pipeline. Same physics.
 
-At production-quality resolution (5nm explicit solvent), each simulation is 800,000 atoms requiring 100+ GB of GPU memory. NVIDIA H100 has 80GB. AMD MI300X has 192GB. Every single simulation, individually, does not fit on competitive hardware.
+At production-quality resolution (5nm explicit solvent), each simulation is 800,000 atoms requiring 100+ GB of GPU memory. A standard NVIDIA H100 has 80GB — it doesn't fit. AMD MI300X has 192GB HBM3, making it one of the most accessible high-memory GPUs for this kind of research at $1.99/hr.
 
 Solo build. @AI at AMD @Hugging Face
 
@@ -61,7 +61,7 @@ Same method that discovered Paxlovid — now for COVID, HIV, and lung cancer.
 
 KRAS G12C was "undruggable" for 40 years. We screen 15 candidates in minutes.
 
-800K atoms per simulation. 100+ GB. Only fits on MI300X.
+800K atoms per simulation. 100+ GB. Doesn't fit on H100 — runs on MI300X.
 
 #AMDHackathon @AIatAMD @huggingface
 
@@ -95,9 +95,7 @@ EGFR Kinase Lung Cancer (12 compounds):
 • $8B/yr global market for EGFR inhibitors
 
 Why AMD MI300X:
-Each simulation runs at production quality — 800,000 atoms in explicit solvent. Each one requires 100+ GB of GPU memory. Each one, individually, does not fit on a single NVIDIA H100 (80GB). AMD MI300X (192GB HBM3) runs every one of them.
-
-This isn't a benchmark. At this resolution, competitive hardware physically cannot run the simulation.
+Each simulation runs at production quality — 800,000 atoms in explicit solvent. Each one requires 100+ GB of GPU memory. A standard NVIDIA H100 has 80GB — this doesn't fit. AMD MI300X with 192GB HBM3 is one of the most accessible high-memory GPUs for computational drug discovery, available at $1.99/hr through the AMD Developer Cloud.
 
 The Platform:
 → 5 LangGraph agents with full trace logging
@@ -131,10 +129,10 @@ Same method that discovered Paxlovid — on AMD MI300X.
 • COVID: GC-376 binds stronger than Paxlovid
 • HIV: 10 antiretrovirals ranked — matches clinical data
 • KRAS G12C: "undruggable" for 40 years — we screen 15 candidates
-• EGFR: 3 generations of drugs compared
+• EGFR: 3 generations of cancer drugs compared
 
 57 compounds. 4 diseases. 800K atoms each. 100+ GB memory.
-H100: can't run it. MI300X: runs every one.
+Doesn't fit on H100. Runs on MI300X.
 
 [HF Space link]
 
@@ -159,4 +157,4 @@ H100: can't run it. MI300X: runs every one.
 | lablab Discord | May 9 | Discord |
 
 ### Cover Image Text
-Change bottom line to: `800,000 atoms · 100+ GB simulation · Only possible on AMD`
+Change bottom line to: `800,000 atoms · 100+ GB simulation · AMD MI300X 192GB HBM3`
