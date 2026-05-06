@@ -71,23 +71,36 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
       ),
     },
     {
-      title: "Demo Target",
-      subtitle: "COVID-19 Main Protease (6LU7)",
+      title: "Choose a Target",
+      subtitle: "4 validated drug targets",
       content: (
-        <div className="space-y-4 text-sm text-slate-400">
-          <p>
-            The demo screens <span className="font-semibold text-slate-900">20 drug candidates</span> against
-            the SARS-CoV-2 main protease — the same target as <span className="text-amber-400">Paxlovid</span>.
-          </p>
-          <div className="rounded-xl bg-slate-50 p-4 text-xs">
-            <div className="mb-2 font-semibold text-slate-900">What to look for:</div>
-            <ul className="space-y-1.5 text-slate-400">
-              <li>• <span className="text-blue-600">GC-376</span> — should rank as top hit</li>
-              <li>• Compare binding scores to <span className="text-amber-400">Nirmatrelvir (Paxlovid)</span></li>
-              <li>• Click residue badges to zoom into the binding site</li>
-              <li>• Click compounds in the rankings table to inspect them</li>
-              <li>• Check <span className="text-blue-400">Agent Logs</span> tab to see AI reasoning</li>
-            </ul>
+        <div className="space-y-3 text-sm">
+          <div className="rounded-xl bg-slate-50 p-3">
+            <div className="flex items-center gap-2">
+              <span>🦠</span>
+              <span className="text-xs font-semibold text-slate-900">COVID-19 Protease</span>
+              <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-600">Recommended first</span>
+            </div>
+            <p className="mt-1 text-[10px] text-slate-400">20 compounds vs Paxlovid. GC-376 should rank as top hit with stronger binding.</p>
+          </div>
+          <div className="rounded-xl bg-slate-50 p-3">
+            <div className="flex items-center gap-2">
+              <span>🧬</span>
+              <span className="text-xs font-semibold text-slate-900">KRAS G12C — Lung Cancer</span>
+              <span className="rounded bg-purple-50 px-1.5 py-0.5 text-[9px] text-purple-600">Oncology</span>
+            </div>
+            <p className="mt-1 text-[10px] text-slate-400">15 compounds vs Sotorasib (Lumakras). Was &quot;undruggable&quot; for 40 years until 2021.</p>
+          </div>
+          <div className="rounded-xl bg-slate-50 p-3">
+            <div className="flex items-center gap-2">
+              <span>🧬</span>
+              <span className="text-xs font-semibold text-slate-900">EGFR Kinase — Lung Cancer</span>
+              <span className="rounded bg-purple-50 px-1.5 py-0.5 text-[9px] text-purple-600">Oncology</span>
+            </div>
+            <p className="mt-1 text-[10px] text-slate-400">12 compounds vs Erlotinib (Tarceva). Classic target, $8B/yr market, 3 drug generations.</p>
+          </div>
+          <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-400">
+            <span className="font-semibold text-slate-600">Tips:</span> Click residue badges to zoom in. Click compounds in rankings to inspect. Check Agent Logs for AI reasoning.
           </div>
         </div>
       ),
