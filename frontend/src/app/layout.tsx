@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DrugForge - AI Drug Discovery on AMD MI300X",
+  title: "CatalystMD - AI Drug Discovery on AMD MI300X",
   description:
     "AI drug discovery platform using molecular dynamics simulation on AMD MI300X. " +
     "Five agents orchestrate a complete computational drug discovery pipeline.",

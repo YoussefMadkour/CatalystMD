@@ -1,23 +1,10 @@
-from backend.config import QWEN_API_URL, QWEN_MODEL
-
-
-def _call_qwen(prompt: str) -> str:
-    try:
-        from openai import OpenAI
-
-        client = OpenAI(base_url=QWEN_API_URL, api_key="not-needed")
-        resp = client.chat.completions.create(
-            model=QWEN_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
-            temperature=0.3,
-        )
-        return resp.choices[0].message.content
-    except Exception:
-        return ""
+import time
+from backend.config import QWEN_MODEL
+from backend.agents.llm import call_llm
 
 
 def run_binding_scorer(state: dict) -> dict:
+    start = time.perf_counter()
     results = state["simulation_results"]
     target = state["target_analysis"]
 
@@ -58,13 +45,16 @@ def run_binding_scorer(state: dict) -> dict:
         for r in top3
     )
 
-    interpretation = _call_qwen(
+    prompt = (
         f"You are a computational chemist. The following compounds were screened against "
         f"{target['protein_name']} ({target['pdb_id']}). Binding scores (more negative = stronger):\n\n"
         f"{top3_summary}\n\n"
         f"Nirmatrelvir (Paxlovid active ingredient) scored {nirmatrelvir_score} kcal/mol.\n"
         f"In 3-4 sentences, interpret these results for a pharmaceutical scientist."
     )
+
+    llm_trace = call_llm(prompt)
+    interpretation = llm_trace["response"]
 
     if not interpretation:
         top = top3[0]
@@ -77,6 +67,24 @@ def run_binding_scorer(state: dict) -> dict:
             f"biochemical IC50 assays is recommended to confirm computational predictions."
         )
 
+    elapsed = time.perf_counter() - start
+
+    trace_data = {
+        "agent": "score_binding",
+        "agent_name": "Binding Scorer",
+        "duration_seconds": round(elapsed, 2),
+        "model": QWEN_MODEL,
+        "input_summary": f"{len(results)} simulation results",
+        "output_summary": f"Top hit: {rankings[0]['compound_name']} at {rankings[0]['binding_score_kcal_mol']} kcal/mol "
+                          f"({rankings[0]['vs_nirmatrelvir']} than Paxlovid)",
+        "steps": [
+            {"action": "Sort by binding energy", "detail": f"Ranked {len(rankings)} compounds (lower = stronger)"},
+            {"action": "Compare to nirmatrelvir", "detail": f"Reference: {nirmatrelvir_score} kcal/mol"},
+            {"action": "LLM interpretation", "detail": f"Generated scientific analysis ({llm_trace['duration_ms']}ms)"},
+        ],
+        "llm_calls": [llm_trace],
+    }
+
     return {
         "binding_rankings": {
             "rankings": rankings,
@@ -84,5 +92,6 @@ def run_binding_scorer(state: dict) -> dict:
             "top_hit": rankings[0] if rankings else None,
             "interpretation": interpretation,
             "total_screened": len(rankings),
-        }
+        },
+        "agent_traces": state.get("agent_traces", []) + [trace_data],
     }

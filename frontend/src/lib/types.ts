@@ -69,6 +69,31 @@ export interface Benchmark {
   nvidia_h100_feasible: boolean;
 }
 
+export interface LLMCall {
+  prompt: string;
+  model: string;
+  response: string;
+  duration_ms: number;
+  success: boolean;
+  error?: string;
+}
+
+export interface AgentTraceStep {
+  action: string;
+  detail: string;
+}
+
+export interface AgentTrace {
+  agent: string;
+  agent_name: string;
+  duration_seconds: number;
+  model: string | null;
+  input_summary: string;
+  output_summary: string;
+  steps: AgentTraceStep[];
+  llm_calls: LLMCall[];
+}
+
 export interface PipelineResults {
   status: "completed";
   target_analysis: TargetAnalysis;
@@ -76,6 +101,7 @@ export interface PipelineResults {
   toxicity_profiles: ToxicityProfile[];
   discovery_brief: string;
   benchmark: Benchmark;
+  agent_traces?: AgentTrace[];
 }
 
 export type AgentName =

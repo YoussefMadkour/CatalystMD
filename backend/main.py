@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     jobs.clear()
 
 
-app = FastAPI(title="DrugForge API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="CatalystMD API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -145,6 +145,7 @@ async def get_results(job_id: str):
         "binding_rankings": result.get("binding_rankings"),
         "toxicity_profiles": result.get("toxicity_profiles"),
         "discovery_brief": result.get("discovery_brief"),
+        "agent_traces": result.get("agent_traces", []),
         "benchmark": {
             "atom_count": result.get("atom_count"),
             "simulation_time_seconds": result.get("amd_simulation_time"),
@@ -180,6 +181,31 @@ async def list_compounds():
     return {"compounds": DEMO_COMPOUNDS}
 
 
+@app.get("/api/dock/{pdb_id}/{compound_id}")
+async def dock_single(pdb_id: str, compound_id: str):
+    """Dock a single compound — returns 3D pose PDB string for the viewer."""
+    from backend.simulation.docking import dock_compound
+
+    target_info = KNOWN_TARGETS.get(pdb_id.upper())
+    if not target_info:
+        raise HTTPException(status_code=404, detail=f"Unknown target: {pdb_id}")
+
+    compound = next((c for c in DEMO_COMPOUNDS if c["id"] == compound_id), None)
+    if not compound:
+        raise HTTPException(status_code=404, detail=f"Unknown compound: {compound_id}")
+
+    pdb_path = await asyncio.to_thread(download_pdb, pdb_id)
+    center = target_info.get("binding_site_center", [0, 0, 0])
+
+    result = await asyncio.to_thread(
+        dock_compound, str(pdb_path), compound["smiles"], compound_id, center
+    )
+
+    if result.get("error"):
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "drugforge"}
+    return {"status": "ok", "service": "catalystmd"}

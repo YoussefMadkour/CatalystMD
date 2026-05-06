@@ -1,13 +1,16 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).parent.parent
+load_dotenv(BASE_DIR / "backend" / ".env")
 DATA_DIR = BASE_DIR / "data"
 PRECOMPUTED_DIR = DATA_DIR / "precomputed"
 PDB_CACHE_DIR = DATA_DIR / "pdb_cache"
 
 QWEN_API_URL = os.getenv("QWEN_API_URL", "http://localhost:8001/v1")
 QWEN_MODEL = os.getenv("QWEN_MODEL", "Qwen/Qwen2.5-7B-Instruct")
+QWEN_API_KEY = os.getenv("OPENAI_API_KEY", "not-needed")
 
 USE_AMD_GPU = os.getenv("USE_AMD_GPU", "true").lower() == "true"
 OPENCL_DEVICE_INDEX = os.getenv("OPENCL_DEVICE_INDEX", "0")

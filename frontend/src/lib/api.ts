@@ -1,6 +1,6 @@
 import type { PipelineResults, AgentStatusMap } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export async function startRun(pdbId: string = "6LU7"): Promise<string> {
   const res = await fetch(`${API_BASE}/api/run`, {
@@ -24,38 +24,52 @@ export async function getProteinPDB(pdbId: string): Promise<string> {
   return data.pdb_data;
 }
 
-export function subscribeToStatus(
+export function pollStatus(
   jobId: string,
   onAgentUpdate: (agent: string, status: string) => void,
   onComplete: () => void,
   onError: (err: string) => void
 ): () => void {
-  const es = new EventSource(`${API_BASE}/api/status/${jobId}`);
+  let cancelled = false;
 
-  es.addEventListener("update", (e) => {
-    const data = JSON.parse(e.data);
-    if (data.status === "completed") {
-      onComplete();
-      es.close();
-    } else if (data.status === "failed") {
-      onError(data.error || "Pipeline failed");
-      es.close();
-    } else if (data.agent) {
-      onAgentUpdate(data.agent, data.status);
+  async function poll() {
+    while (!cancelled) {
+      try {
+        const res = await fetch(`${API_BASE}/api/results/${jobId}`);
+        if (!res.ok) {
+          onError(`Server error: ${res.status}`);
+          return;
+        }
+        const data = await res.json();
+
+        if (data.status === "completed") {
+          onComplete();
+          return;
+        }
+        if (data.status === "failed") {
+          onError(data.error || "Pipeline failed");
+          return;
+        }
+
+        // Update agent statuses from running job
+        if (data.agent_status) {
+          for (const [agent, status] of Object.entries(data.agent_status)) {
+            onAgentUpdate(agent, status as string);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          onError("Connection lost");
+        }
+        return;
+      }
+
+      await new Promise((r) => setTimeout(r, 500));
     }
-  });
+  }
 
-  es.addEventListener("done", () => {
-    onComplete();
-    es.close();
-  });
-
-  es.onerror = () => {
-    onError("Connection lost");
-    es.close();
-  };
-
-  return () => es.close();
+  poll();
+  return () => { cancelled = true; };
 }
 
 export async function fetchCompounds() {

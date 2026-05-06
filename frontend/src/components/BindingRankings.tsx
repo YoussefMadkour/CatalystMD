@@ -1,108 +1,183 @@
 "use client";
 
+import React from "react";
 import type { RankingEntry, ToxicityProfile } from "@/lib/types";
 
 interface BindingRankingsProps {
   rankings: RankingEntry[];
-  toxicityProfiles: ToxicityProfile[];
+  toxicityProfiles?: ToxicityProfile[];
+  selectedCompoundId?: string | null;
+  onSelectCompound?: (compound: RankingEntry | null) => void;
 }
 
 export default function BindingRankings({
   rankings,
   toxicityProfiles,
+  selectedCompoundId,
+  onSelectCompound,
 }: BindingRankingsProps) {
-  const toxMap = new Map(toxicityProfiles.map((t) => [t.compound_id, t]));
+  const toxMap = new Map(
+    (toxicityProfiles ?? []).map((t) => [t.compound_id, t])
+  );
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 backdrop-blur">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        Binding Rankings
-      </h3>
+    <div className="animate-fade-in animate-fade-in-delay-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          Binding Rankings
+        </h3>
+        <div className="flex items-center gap-3">
+          {onSelectCompound && (
+            <span className="text-[10px] text-slate-600">Click a row to inspect</span>
+          )}
+          <span className="text-xs text-slate-500">
+            {rankings.length} compounds
+          </span>
+        </div>
+      </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-700/50 text-left text-xs text-slate-500">
-              <th className="pb-2 pr-3">#</th>
-              <th className="pb-2 pr-3">Compound</th>
-              <th className="pb-2 pr-3 text-right">Score (kcal/mol)</th>
-              <th className="pb-2 pr-3 text-center">vs Paxlovid</th>
-              <th className="pb-2 text-center">Lipinski</th>
+            <tr className="border-b border-slate-200">
+              <th className="pb-3 text-left text-[11px] font-medium uppercase tracking-wider text-slate-500">#</th>
+              <th className="pb-3 text-left text-[11px] font-medium uppercase tracking-wider text-slate-500">Compound</th>
+              <th className="pb-3 text-right text-[11px] font-medium uppercase tracking-wider text-slate-500">Binding Score</th>
+              <th className="pb-3 text-center text-[11px] font-medium uppercase tracking-wider text-slate-500">vs Paxlovid</th>
+              <th className="pb-3 text-center text-[11px] font-medium uppercase tracking-wider text-slate-500">Lipinski</th>
             </tr>
           </thead>
           <tbody>
             {rankings.map((r) => {
               const tox = toxMap.get(r.compound_id);
               const isTop = r.rank === 1;
+              const isRef = r.compound_id === "nirmatrelvir";
+              const isSelected = selectedCompoundId === r.compound_id;
 
               return (
+                <React.Fragment key={r.compound_id}>
                 <tr
-                  key={r.compound_id}
-                  className={`border-b border-slate-800/50 transition-colors hover:bg-slate-700/20 ${
-                    isTop ? "bg-cyan-500/5" : ""
+                  onClick={() => onSelectCompound?.(isSelected ? null : r)}
+                  className={`group border-b border-slate-100 transition-colors ${
+                    onSelectCompound ? "cursor-pointer" : ""
+                  } ${
+                    isSelected
+                      ? "bg-blue-50"
+                      : isTop
+                        ? "bg-blue-50/50 hover:bg-blue-50"
+                        : "hover:bg-slate-50"
                   }`}
                 >
                   <td className="py-2.5 pr-3">
-                    <span
-                      className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                        isTop
-                          ? "bg-cyan-500/20 text-cyan-400"
-                          : "text-slate-500"
-                      }`}
-                    >
+                    <span className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-bold ${
+                      isTop || isSelected
+                        ? "bg-blue-100 text-blue-600"
+                        : r.rank <= 3
+                          ? "bg-slate-100 text-slate-700"
+                          : "text-slate-600"
+                    }`}>
                       {r.rank}
                     </span>
                   </td>
-                  <td className="py-2.5 pr-3">
-                    <span
-                      className={`font-medium ${isTop ? "text-white" : "text-slate-300"}`}
-                    >
-                      {r.compound_name}
-                    </span>
-                    {isTop && (
-                      <span className="ml-2 rounded bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-400">
-                        TOP HIT
+                  <td className="py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${isTop || isSelected ? "font-semibold text-slate-900" : "text-slate-700"}`}>
+                        {r.compound_name}
                       </span>
-                    )}
+                      {isTop && (
+                        <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-blue-600">
+                          Top Hit
+                        </span>
+                      )}
+                      {isRef && (
+                        <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-400">
+                          FDA Approved
+                        </span>
+                      )}
+                      {isSelected && !isTop && (
+                        <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-blue-600">
+                          Inspecting
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="py-2.5 pr-3 text-right font-mono">
-                    <span
-                      className={
-                        isTop ? "text-cyan-400" : "text-slate-300"
-                      }
-                    >
+                  <td className="py-2.5 text-right">
+                    <span className={`font-mono text-sm ${
+                      isTop || isSelected ? "font-bold text-blue-600" : "text-slate-700"
+                    }`}>
                       {r.binding_score_kcal_mol.toFixed(2)}
                     </span>
+                    <span className="ml-1 text-[10px] text-slate-600">kcal/mol</span>
                   </td>
-                  <td className="py-2.5 pr-3 text-center">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                        r.vs_nirmatrelvir === "stronger"
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : r.vs_nirmatrelvir === "similar"
-                            ? "bg-yellow-500/20 text-yellow-400"
-                            : "bg-slate-700 text-slate-400"
-                      }`}
-                    >
-                      {r.vs_nirmatrelvir}
+                  <td className="py-2.5 text-center">
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      r.vs_nirmatrelvir === "stronger"
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : r.vs_nirmatrelvir === "similar"
+                          ? "bg-slate-500/10 text-slate-400"
+                          : "bg-orange-500/10 text-orange-400"
+                    }`}>
+                      {r.vs_nirmatrelvir === "stronger" ? "↑ Stronger" :
+                       r.vs_nirmatrelvir === "similar" ? "≈ Similar" : "↓ Weaker"}
                     </span>
                   </td>
                   <td className="py-2.5 text-center">
                     {tox ? (
-                      <span
-                        className={`text-xs font-medium ${
-                          tox.overall_pass
-                            ? "text-emerald-400"
-                            : "text-red-400"
-                        }`}
-                      >
+                      <span className={`text-[11px] font-medium ${
+                        tox.overall_pass ? "text-emerald-400" : "text-orange-400"
+                      }`}>
                         {tox.overall_pass ? "PASS" : "REVIEW"}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-600">--</span>
+                      <span className="text-[11px] text-slate-600">—</span>
                     )}
                   </td>
                 </tr>
+                {isSelected && (
+                  <tr key={`${r.compound_id}-detail`}>
+                    <td colSpan={5} className="bg-blue-50/80 px-4 pb-3 pt-1">
+                      <div className="grid grid-cols-4 gap-3">
+                        <div className="rounded-lg bg-white p-2.5 text-center shadow-sm">
+                          <div className="text-lg font-bold text-blue-600">{r.binding_score_kcal_mol.toFixed(2)}</div>
+                          <div className="text-[9px] text-slate-400">Binding Score (kcal/mol)</div>
+                        </div>
+                        <div className="rounded-lg bg-white p-2.5 text-center shadow-sm">
+                          <div className={`text-sm font-bold ${r.vs_nirmatrelvir === "stronger" ? "text-emerald-600" : r.vs_nirmatrelvir === "similar" ? "text-slate-600" : "text-orange-500"}`}>
+                            {r.delta_vs_nirmatrelvir > 0 ? "+" : ""}{r.delta_vs_nirmatrelvir.toFixed(2)}
+                          </div>
+                          <div className="text-[9px] text-slate-400">vs Paxlovid (kcal/mol)</div>
+                        </div>
+                        {tox && (
+                          <>
+                            <div className="rounded-lg bg-white p-2.5 text-center shadow-sm">
+                              <div className="text-sm font-bold text-slate-700">{tox.lipinski.molecular_weight}</div>
+                              <div className="text-[9px] text-slate-400">MW (Da) &lt;500</div>
+                            </div>
+                            <div className="rounded-lg bg-white p-2.5 text-center shadow-sm">
+                              <div className="text-sm font-bold text-slate-700">{tox.lipinski.lipinski_violations}/4</div>
+                              <div className="text-[9px] text-slate-400">Lipinski violations</div>
+                            </div>
+                          </>
+                        )}
+                        {!tox && (
+                          <>
+                            <div className="rounded-lg bg-white p-2.5 text-center shadow-sm">
+                              <div className="text-sm text-slate-400">—</div>
+                              <div className="text-[9px] text-slate-400">No tox data</div>
+                            </div>
+                            <div />
+                          </>
+                        )}
+                      </div>
+                      {r.known_ki_nm && (
+                        <div className="mt-2 text-[10px] text-slate-400">
+                          Known experimental Ki: <span className="font-medium text-slate-600">{r.known_ki_nm} nM</span> (from published literature)
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               );
             })}
           </tbody>

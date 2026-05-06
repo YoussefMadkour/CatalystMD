@@ -23,6 +23,7 @@ class DrugDiscoveryState(TypedDict, total=False):
     amd_simulation_time: float
     atom_count: int
     platform_used: str
+    agent_traces: list[dict]
 
 
 def _wrap_node(fn: Callable, name: str, callback: Callable | None = None):
