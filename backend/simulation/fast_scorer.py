@@ -3,7 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from backend.config import PRECOMPUTED_DIR, FAST_SCORING_STEPS
+from backend.config import PRECOMPUTED_DIR, FAST_SCORING_STEPS, SOLVENT_PADDING_NM
 
 
 def _precomputed_path(pdb_id: str, compound_id: str) -> Path:
@@ -68,7 +68,7 @@ def _run_openmm_fast(protein_pdb_path: str, compound: dict, pdb_id: str) -> dict
     forcefield = app.ForceField("amber14-all.xml", "amber14/tip3pfb.xml")
 
     modeller = app.Modeller(pdb.topology, pdb.positions)
-    modeller.addSolvent(forcefield, model="tip3p", padding=1.0 * unit.nanometers)
+    modeller.addSolvent(forcefield, model="tip3p", padding=SOLVENT_PADDING_NM * unit.nanometers)
 
     atom_count = modeller.topology.getNumAtoms()
     system = forcefield.createSystem(

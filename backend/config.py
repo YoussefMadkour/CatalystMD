@@ -17,6 +17,7 @@ OPENCL_DEVICE_INDEX = os.getenv("OPENCL_DEVICE_INDEX", "0")
 
 SIMULATION_STEPS = int(os.getenv("SIMULATION_STEPS", "50000"))
 FAST_SCORING_STEPS = int(os.getenv("FAST_SCORING_STEPS", "1000"))
+SOLVENT_PADDING_NM = float(os.getenv("SOLVENT_PADDING_NM", "1.0"))
 
 RCSB_BASE_URL = "https://files.rcsb.org/download"
 
