@@ -47,6 +47,41 @@ KNOWN_TARGETS = {
         "biological_context": "HIV-1 protease cleaves Gag and Gag-Pol polyproteins during viral maturation.",
         "therapeutic_relevance": "Target of all protease inhibitor antiretrovirals (ritonavir, darunavir, etc.).",
     },
+    "6OIM": {
+        "name": "KRAS G12C (Lung Cancer)",
+        "binding_site_residues": ["Cys12", "His95", "Tyr96", "Asp69"],
+        "binding_site_center": [-2.5, -1.8, 12.3],
+        "pocket_volume_A3": 530.0,
+        "resolution_angstroms": 1.65,
+        "biological_context": (
+            "KRAS is the most frequently mutated oncogene in human cancer. The G12C mutation "
+            "locks KRAS in its active GTP-bound state, driving uncontrolled cell growth. For 40 years "
+            "KRAS was considered 'undruggable' because its surface lacks obvious drug-binding pockets."
+        ),
+        "therapeutic_relevance": (
+            "Sotorasib (Lumakras), approved 2021, was the first drug to successfully target KRAS G12C "
+            "by forming a covalent bond with the mutant Cys12 residue in the Switch II pocket. "
+            "It transformed lung cancer treatment but resistance emerges quickly — next-generation "
+            "inhibitors are urgently needed."
+        ),
+    },
+    "1M17": {
+        "name": "EGFR Kinase (Lung Cancer)",
+        "binding_site_residues": ["Met793", "Thr790", "Lys745", "Asp855"],
+        "binding_site_center": [22.5, 0.5, 52.0],
+        "pocket_volume_A3": 780.0,
+        "resolution_angstroms": 2.6,
+        "biological_context": (
+            "Epidermal Growth Factor Receptor (EGFR) is a receptor tyrosine kinase that drives "
+            "cell proliferation. Activating mutations in EGFR are found in 15-30% of non-small cell "
+            "lung cancers, making it one of the most important targets in precision oncology."
+        ),
+        "therapeutic_relevance": (
+            "Erlotinib (Tarceva) and gefitinib (Iressa) were among the first targeted cancer therapies. "
+            "Third-generation inhibitor osimertinib (Tagrisso) overcomes resistance mutations. "
+            "EGFR inhibitors generate over $8 billion annually in global sales."
+        ),
+    },
 }
 
 for d in [DATA_DIR, PRECOMPUTED_DIR, PDB_CACHE_DIR]:

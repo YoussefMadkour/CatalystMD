@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
 from backend.pipeline import run_pipeline_async
-from backend.compounds import DEMO_COMPOUNDS
+from backend.compounds import DEMO_COMPOUNDS, TARGET_COMPOUNDS
 from backend.config import KNOWN_TARGETS
 from backend.simulation.openmm_runner import download_pdb
 
@@ -64,10 +64,11 @@ AGENT_DISPLAY = {
 async def start_run(req: RunRequest):
     job_id = str(uuid.uuid4())[:8]
 
+    target_compounds = TARGET_COMPOUNDS.get(req.pdb_id.upper(), DEMO_COMPOUNDS)
     if req.compound_ids:
-        compounds = [c for c in DEMO_COMPOUNDS if c["id"] in req.compound_ids]
+        compounds = [c for c in target_compounds if c["id"] in req.compound_ids]
     else:
-        compounds = DEMO_COMPOUNDS
+        compounds = target_compounds
 
     jobs[job_id] = {
         "status": "running",
@@ -177,8 +178,9 @@ async def list_targets():
 
 
 @app.get("/api/compounds")
-async def list_compounds():
-    return {"compounds": DEMO_COMPOUNDS}
+async def list_compounds(pdb_id: str = "6LU7"):
+    compounds = TARGET_COMPOUNDS.get(pdb_id.upper(), DEMO_COMPOUNDS)
+    return {"compounds": compounds}
 
 
 @app.get("/api/dock/{pdb_id}/{compound_id}")

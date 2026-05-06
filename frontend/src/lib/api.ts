@@ -72,8 +72,8 @@ export function pollStatus(
   return () => { cancelled = true; };
 }
 
-export async function fetchCompounds() {
-  const res = await fetch(`${API_BASE}/api/compounds`);
+export async function fetchCompounds(pdbId: string = "6LU7") {
+  const res = await fetch(`${API_BASE}/api/compounds?pdb_id=${pdbId}`);
   const data = await res.json();
   return data.compounds;
 }

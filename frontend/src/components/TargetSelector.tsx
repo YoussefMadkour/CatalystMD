@@ -9,8 +9,10 @@ interface TargetSelectorProps {
 }
 
 const TARGETS = [
-  { pdb_id: "6LU7", name: "COVID-19 Main Protease", desc: "SARS-CoV-2 Mpro — Paxlovid target" },
-  { pdb_id: "1HIV", name: "HIV-1 Protease", desc: "Classic antiretroviral target" },
+  { pdb_id: "6LU7", name: "COVID-19 Main Protease", desc: "SARS-CoV-2 Mpro — Paxlovid target", category: "Antiviral" },
+  { pdb_id: "6OIM", name: "KRAS G12C (Lung Cancer)", desc: "Oncogene — Sotorasib (Lumakras) target", category: "Cancer" },
+  { pdb_id: "1M17", name: "EGFR Kinase (Lung Cancer)", desc: "Receptor kinase — Erlotinib (Tarceva) target", category: "Cancer" },
+  { pdb_id: "1HIV", name: "HIV-1 Protease", desc: "Classic antiretroviral target", category: "Antiviral" },
 ];
 
 export default function TargetSelector({ selectedTarget, onTargetChange, onRun, compoundCount, disabled }: TargetSelectorProps) {
@@ -27,7 +29,9 @@ export default function TargetSelector({ selectedTarget, onTargetChange, onRun, 
         className="mb-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
       >
         {TARGETS.map((t) => (
-          <option key={t.pdb_id} value={t.pdb_id}>{t.name} ({t.pdb_id})</option>
+          <option key={t.pdb_id} value={t.pdb_id}>
+            {t.category === "Cancer" ? "🧬 " : "🦠 "}{t.name} ({t.pdb_id})
+          </option>
         ))}
       </select>
 
@@ -40,6 +44,11 @@ export default function TargetSelector({ selectedTarget, onTargetChange, onRun, 
           <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
           <span className="text-xs text-slate-500">AMD MI300X</span>
         </div>
+        {selectedInfo?.category === "Cancer" && (
+          <span className="rounded-lg bg-purple-50 px-2.5 py-1 text-[10px] font-medium text-purple-600">
+            Oncology
+          </span>
+        )}
       </div>
 
       <button

@@ -12,6 +12,7 @@ import {
   getResults,
   getProteinPDB,
   pollStatus,
+  fetchCompounds,
 } from "@/lib/api";
 import Header from "@/components/Header";
 import ProteinViewer from "@/components/ProteinViewer";
@@ -39,11 +40,15 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCompound, setSelectedCompound] = useState<RankingEntry | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [compoundCount, setCompoundCount] = useState(20);
 
   useEffect(() => {
     getProteinPDB(selectedTarget)
       .then(setPdbData)
       .catch(() => setPdbData(null));
+    fetchCompounds(selectedTarget)
+      .then((c: any[]) => setCompoundCount(c.length))
+      .catch(() => setCompoundCount(0));
   }, [selectedTarget]);
 
   const toxicityMap = useMemo(() => {
@@ -149,7 +154,7 @@ export default function Home() {
                   selectedTarget={selectedTarget}
                   onTargetChange={setSelectedTarget}
                   onRun={handleRun}
-                  compoundCount={20}
+                  compoundCount={compoundCount}
                   disabled={false}
                 />
 
