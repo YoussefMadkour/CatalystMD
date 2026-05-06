@@ -292,9 +292,73 @@ EGFR_COMPOUNDS = [
 ]
 
 # Map PDB IDs to their compound libraries
+# HIV-1 protease inhibitors — real antiretroviral drugs
+HIV_COMPOUNDS = [
+    {
+        "id": "ritonavir",
+        "name": "Ritonavir (Norvir)",
+        "smiles": "CC(C)[C@@H](NC(=O)N(C)Cc1ccccc1)C(=O)N[C@H](C[C@H](O)[C@H](Cc1ccccc1)NC(=O)OCc1cncs1)Cc1ccccc1",
+        "known_ki_nm": 0.015,
+    },
+    {
+        "id": "darunavir",
+        "name": "Darunavir (Prezista)",
+        "smiles": "CC(C)CN(C[C@@H](O)[C@H](Cc1ccccc1)NC(=O)O[C@H]1CO[C@@H]2OCC[C@H]12)S(=O)(=O)c1ccc(N)cc1",
+        "known_ki_nm": 0.005,
+    },
+    {
+        "id": "atazanavir",
+        "name": "Atazanavir (Reyataz)",
+        "smiles": "COC(=O)N[C@@H](C(=O)N[C@@H](Cc1ccccc1)[C@@H](O)CN(Cc1ccc(-c2ccccn2)cc1)NC(=O)[C@@H](NC(=O)OC)C(C)(C)C)C(C)(C)C",
+        "known_ki_nm": 0.01,
+    },
+    {
+        "id": "lopinavir",
+        "name": "Lopinavir",
+        "smiles": "CC(C)[C@@H](NC(=O)[C@@H](CC1CCCCC1)NC(=O)[C@@H](CC(=O)Nc1ccccc1)[C@H](O)Cc1ccccc1)C(=O)N[C@@H](C)c1ccccc1",
+        "known_ki_nm": 1.3,
+    },
+    {
+        "id": "saquinavir",
+        "name": "Saquinavir (Invirase)",
+        "smiles": "CC(C)(C)NC(=O)[C@@H]1C[C@@H]2CCCC[C@@H]2CN1C[C@H](O)[C@H](Cc1ccccc1)NC(=O)[C@@H](CC(N)=O)NC(=O)c1ccc2ccccc2n1",
+        "known_ki_nm": 0.12,
+    },
+    {
+        "id": "nelfinavir",
+        "name": "Nelfinavir (Viracept)",
+        "smiles": "Oc1cccc(C(=O)N[C@@H](CSc2ccccc2)[C@@H](O)CN2C[C@H]3CCCC[C@H]3C[C@H]2C(=O)NC(C)(C)C)c1O",
+        "known_ki_nm": 2.0,
+    },
+    {
+        "id": "indinavir",
+        "name": "Indinavir (Crixivan)",
+        "smiles": "CC(C)(C)NC(=O)[C@@H]1CN(Cc2cccnc2)CCN1C[C@H](O)C[C@@H](Cc1ccccc1)C(=O)N[C@H]1c2ccccc2C[C@H]1O",
+        "known_ki_nm": 0.56,
+    },
+    {
+        "id": "amprenavir",
+        "name": "Amprenavir (Agenerase)",
+        "smiles": "CC(C)CN(C[C@@H](O)[C@H](Cc1ccccc1)NC(=O)O[C@H]1CCOC1)S(=O)(=O)c1ccc(N)cc1",
+        "known_ki_nm": 0.6,
+    },
+    {
+        "id": "tipranavir",
+        "name": "Tipranavir (Aptivus)",
+        "smiles": "CCCc1nc(C(CC)CC)c(C(=O)c2cc(C(F)(F)F)cc(C(F)(F)F)c2O)c(O)c1CC1CC1",
+        "known_ki_nm": 8.0,
+    },
+    {
+        "id": "fosamprenavir",
+        "name": "Fosamprenavir (Lexiva)",
+        "smiles": "CC(C)CN(C[C@@H](O)[C@H](Cc1ccccc1)NC(=O)OC1CCOC1)S(=O)(=O)c1ccc(N)cc1",
+        "known_ki_nm": 0.7,
+    },
+]
+
 TARGET_COMPOUNDS = {
     "6LU7": DEMO_COMPOUNDS,
-    "1HIV": DEMO_COMPOUNDS,  # reuse COVID compounds for demo
+    "1HIV": HIV_COMPOUNDS,
     "6OIM": KRAS_COMPOUNDS,
     "1M17": EGFR_COMPOUNDS,
 }

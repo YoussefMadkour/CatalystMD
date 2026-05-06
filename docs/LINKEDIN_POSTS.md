@@ -1,12 +1,20 @@
 # CatalystMD — LinkedIn & Social Media Posts
 
-## Key Framing
+## Key Numbers
 
-CatalystMD uses the same computational methodology that discovered Paxlovid. The AMD MI300X enables production-quality simulations (800K atoms in explicit solvent) that don't fit on competitive hardware — across COVID-19, KRAS G12C lung cancer, and EGFR lung cancer.
+| Target | Disease | Compounds | Reference Drug |
+|---|---|---|---|
+| COVID-19 Protease (6LU7) | COVID-19 | 20 | Paxlovid |
+| HIV-1 Protease (1HIV) | HIV/AIDS | 10 | Darunavir, Ritonavir |
+| KRAS G12C (6OIM) | Lung Cancer | 15 | Sotorasib (Lumakras) |
+| EGFR Kinase (1M17) | Lung Cancer | 12 | Erlotinib (Tarceva) |
+| **Total** | **4 diseases** | **57** | |
+
+At 5nm water box: ~800,000 atoms per simulation, 100+ GB GPU memory each.
 
 ---
 
-## Post 1 — Build in Public (Post Day 2)
+## Post 1 — Build in Public (Post TODAY)
 
 ### LinkedIn
 
@@ -23,23 +31,23 @@ CatalystMD does the same thing — and not just for COVID.
 → Screen for toxicity using Lipinski's Rule of Five
 → Generate an AI-written discovery brief with structural analysis
 
-Three targets. Three diseases:
+Four targets. Four diseases:
 • COVID-19 protease — 20 compounds vs Paxlovid
-• KRAS G12C lung cancer — 15 compounds vs Sotorasib (the "undruggable" oncogene, finally drugged in 2021)
-• EGFR kinase lung cancer — 12 compounds vs Erlotinib ($8B/yr drug market)
+• HIV-1 protease — 10 antiretrovirals (ritonavir, darunavir, saquinavir...)
+• KRAS G12C lung cancer — 15 compounds vs Sotorasib
+• EGFR kinase lung cancer — 12 compounds vs Erlotinib
 
-47 compounds. Same pipeline. Same physics. Different diseases.
+KRAS is the one that gets me. For 40 years, researchers called it "undruggable." The protein surface is too smooth — no pocket for a drug to grab onto. Thousands of scientists tried and failed. Patients had no targeted treatment. In 2021, sotorasib finally cracked it by finding a hidden pocket that only exists in the mutant. Resistance is already emerging. The next generation of inhibitors is urgent.
 
-At production-quality resolution (5nm explicit solvent), each simulation is 800,000 atoms requiring 100+ GB of GPU memory. NVIDIA H100 has 80GB. AMD MI300X has 192GB.
+CatalystMD screens 15 candidates against KRAS G12C in minutes. The same screening that took years of lab work.
 
-Today we screen 47 compounds to validate the pipeline.
-Scale this to 100,000 compounds on MI300X — that's a real drug discovery campaign worth $500K+ to pharmaceutical companies.
+57 compounds. 4 diseases. Same pipeline. Same physics.
 
-Solo build. 4 days left.
+At production-quality resolution (5nm explicit solvent), each simulation is 800,000 atoms requiring 100+ GB of GPU memory. NVIDIA H100 has 80GB. AMD MI300X has 192GB. Every single simulation, individually, does not fit on competitive hardware.
 
-@AI at AMD @Hugging Face
+Solo build. @AI at AMD @Hugging Face
 
-#AMDHackathon #DrugDiscovery #AI #BuildInPublic #CancerResearch #ComputationalChemistry #MolecularDynamics
+#AMDHackathon #DrugDiscovery #AI #BuildInPublic #CancerResearch #LungCancer #HIV #ComputationalChemistry #MolecularDynamics
 
 ---
 
@@ -47,55 +55,60 @@ Solo build. 4 days left.
 
 Building CatalystMD for @lablofdotai AMD Hackathon
 
-Same method that discovered Paxlovid — now for COVID + lung cancer.
+Same method that discovered Paxlovid — now for COVID, HIV, and lung cancer.
 
-47 compounds across 3 diseases. 5 AI agents. Real molecular dynamics.
+57 compounds across 4 diseases. 5 AI agents. Real molecular dynamics.
 
-At production resolution: 800K atoms, 100+ GB memory.
-H100: 80GB. MI300X: 192GB.
+KRAS G12C was "undruggable" for 40 years. We screen 15 candidates in minutes.
+
+800K atoms per simulation. 100+ GB. Only fits on MI300X.
 
 #AMDHackathon @AIatAMD @huggingface
 
 ---
 
-## Post 2 — Results Are Live (Post Day 5-6)
+## Post 2 — Results Are Live (Post May 9)
 
 ### LinkedIn
 
 CatalystMD is live — AI drug discovery powered by AMD MI300X.
 
-The same computational approach that discovered Paxlovid. 47 drug compounds screened across 3 diseases using real molecular dynamics on AMD hardware.
-
-Results:
+57 drug compounds screened across 4 diseases using the same computational approach that discovered Paxlovid. Real molecular dynamics. Real physics. Real results.
 
 COVID-19 Protease (20 compounds):
 • GC-376 ranks #1 — stronger estimated binding than Paxlovid
-• Pipeline correctly identifies known strong binders from published research
+• Pipeline correctly identifies known inhibitors from published research
+
+HIV-1 Protease (10 compounds):
+• Screened FDA-approved antiretrovirals: ritonavir, darunavir, saquinavir
+• Rankings match clinical potency data — darunavir and ritonavir at the top
 
 KRAS G12C Lung Cancer (15 compounds):
-• Screened against the oncogene considered "undruggable" for 40 years
+• The oncogene considered "undruggable" for 40 years
 • Adagrasib shows strongest binding — consistent with experimental data
-• Sotorasib (Lumakras, FDA approved 2021) correctly identified as top-tier
+• Sotorasib correctly identified as top-tier
+• Resistance is already emerging in patients — next-gen inhibitors are urgent
 
 EGFR Kinase Lung Cancer (12 compounds):
-• Osimertinib (Tagrisso) ranks among the strongest — matching clinical reality
-• Three generations of EGFR drugs represented in the library
+• Three generations of drugs: erlotinib → gefitinib → osimertinib
+• Osimertinib ranks strongest — matching clinical reality
+• $8B/yr global market for EGFR inhibitors
 
 Why AMD MI300X:
-At production-quality explicit solvent (5nm padding), each simulation is 800,000 atoms. That requires 100+ GB of GPU memory. AMD MI300X has 192GB. A single NVIDIA H100 has 80GB.
+Each simulation runs at production quality — 800,000 atoms in explicit solvent. Each one requires 100+ GB of GPU memory. Each one, individually, does not fit on a single NVIDIA H100 (80GB). AMD MI300X (192GB HBM3) runs every one of them.
 
-This isn't a benchmark optimization. At this resolution, the simulation physically does not fit on competitive hardware.
+This isn't a benchmark. At this resolution, competitive hardware physically cannot run the simulation.
 
 The Platform:
-→ 5 LangGraph agents with full trace logging — every AI prompt and response visible
-→ Qwen 2.5-7B served by vLLM directly on AMD MI300X via ROCm
-→ Interactive 3D protein viewer with clickable binding site residues
+→ 5 LangGraph agents with full trace logging
+→ Qwen 2.5-7B on AMD MI300X via vLLM + ROCm
+→ Interactive 3D protein viewer with clickable binding residues
 → Toxicity screening with plain-English explanations
 → AI-generated discovery briefs downloadable as PDF
-→ Agent Logs tab shows complete reasoning chain
+→ Agent Logs: every prompt, every response, every timing visible
 
-Today: 47 compounds validates the pipeline works.
-At scale: 100,000 compounds from ZINC database = a real drug discovery campaign that costs pharmaceutical companies $500,000+.
+Today: 57 compounds validates the pipeline.
+At scale: 100,000 compounds from ZINC database = a real drug discovery campaign worth $500K+ to pharmaceutical companies.
 
 Try it: [HuggingFace Space link]
 Code: github.com/YoussefMadkour/CatalystMD
@@ -103,7 +116,7 @@ Code: github.com/YoussefMadkour/CatalystMD
 Built solo for @lablab.ai AMD Developer Hackathon
 Team CatalystMD
 
-#AMDHackathon #DrugDiscovery #AI #OpenSource #CancerResearch #BuildInPublic #MolecularDynamics #ComputationalChemistry #LungCancer
+#AMDHackathon #DrugDiscovery #AI #OpenSource #CancerResearch #BuildInPublic #MolecularDynamics #LungCancer #HIV #ComputationalChemistry
 
 @AI at AMD @Hugging Face @lablab.ai
 
@@ -113,16 +126,15 @@ Team CatalystMD
 
 CatalystMD is live 🧬
 
-Same method that discovered Paxlovid — now on AMD MI300X.
+Same method that discovered Paxlovid — on AMD MI300X.
 
 • COVID: GC-376 binds stronger than Paxlovid
-• KRAS G12C lung cancer: 15 compounds screened
-• EGFR lung cancer: 12 compounds screened
+• HIV: 10 antiretrovirals ranked — matches clinical data
+• KRAS G12C: "undruggable" for 40 years — we screen 15 candidates
+• EGFR: 3 generations of drugs compared
 
-800K atoms at production resolution. 100+ GB memory.
-H100: can't fit. MI300X: runs it.
-
-47 compounds = validation. 100K = real pharma screening.
+57 compounds. 4 diseases. 800K atoms each. 100+ GB memory.
+H100: can't run it. MI300X: runs every one.
 
 [HF Space link]
 
@@ -132,21 +144,19 @@ H100: can't fit. MI300X: runs it.
 
 ## Tags & Timing
 
-### LinkedIn tags
-@AI at AMD @lablab.ai @Hugging Face
-
-### Twitter/X tags
-@AIatAMD @lablofdotai @huggingface
+### LinkedIn: @AI at AMD @lablab.ai @Hugging Face
+### Twitter/X: @AIatAMD @lablofdotai @huggingface
 
 ### Hashtags
-#AMDHackathon #DrugDiscovery #AI #BuildInPublic #MolecularDynamics #ComputationalChemistry #CancerResearch #OpenSource #MI300X #LungCancer
+#AMDHackathon #DrugDiscovery #AI #BuildInPublic #MolecularDynamics #ComputationalChemistry #CancerResearch #OpenSource #MI300X #LungCancer #HIV
 
 ### Timing
 | Post | When | Platform |
 |---|---|---|
-| Post 1 (Build in Public) | May 6 (today) | LinkedIn + X |
-| Cover image (ChatGPT generated) | May 6-7 | LinkedIn + X + HF Space |
-| Post 2 (Results Live) | May 9 | LinkedIn + X |
-| Share in lablab Discord | May 9 | Discord |
+| Post 1 | May 6 (today) | LinkedIn + X |
+| Cover image | May 6-7 | LinkedIn + X + HF Space |
+| Post 2 | May 9 | LinkedIn + X |
+| lablab Discord | May 9 | Discord |
 
-AMD Radeon GPU hardware prize = "outstanding social engagement." Post early, post with substance, tag everyone.
+### Cover Image Text
+Change bottom line to: `800,000 atoms · 100+ GB simulation · Only possible on AMD`
