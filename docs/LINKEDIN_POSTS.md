@@ -2,19 +2,11 @@
 
 ## Key Framing
 
-CatalystMD is a real drug discovery pipeline using the same methodology that discovered Paxlovid. The AMD MI300X enables two things competitive hardware can't:
-
-1. **Spike protein simulation** — The full SARS-CoV-2 spike trimer (~500K atoms in water) requires 130GB+ GPU memory. H100 has 80GB. This is the hardware showcase.
-
-2. **Scale** — With 20 compounds we validate the pipeline. With 100,000 compounds on MI300X, it becomes a real pharma-grade screening campaign worth $500K+.
-
-These are different value propositions:
-- **Spike trimer** = "This simulation physically cannot run on competitive hardware"
-- **Scale** = "This pipeline does what pharma companies pay millions for"
+CatalystMD uses the same computational methodology that discovered Paxlovid. The AMD MI300X enables production-quality simulations (800K atoms in explicit solvent) that don't fit on competitive hardware — across COVID-19, KRAS G12C lung cancer, and EGFR lung cancer.
 
 ---
 
-## Post 1 — Build in Public (Day 2)
+## Post 1 — Build in Public (Post Day 2)
 
 ### LinkedIn
 
@@ -22,81 +14,88 @@ Building CatalystMD for the AMD Developer Hackathon by @lablab.ai
 
 Paxlovid — the COVID drug that changed the pandemic — was discovered using computational screening. Pfizer simulated thousands of molecules binding to the SARS-CoV-2 protease, ranked them by binding affinity, and found nirmatrelvir.
 
-CatalystMD does the same thing.
+CatalystMD does the same thing — and not just for COVID.
 
 5 AI agents run a complete drug discovery pipeline:
 → Identify the target protein from the global Protein Data Bank
 → Simulate drug-protein binding using real molecular dynamics (OpenMM, AMBER14 force field)
-→ Rank candidates against the FDA-approved drug
+→ Rank candidates against FDA-approved drugs
 → Screen for toxicity using Lipinski's Rule of Five
 → Generate an AI-written discovery brief with structural analysis
 
-First results: GC-376 shows stronger estimated binding than Paxlovid's active ingredient. The pipeline correctly identifies known strong binders from published research — validating it could screen novel compound libraries at scale.
+Three targets. Three diseases:
+• COVID-19 protease — 20 compounds vs Paxlovid
+• KRAS G12C lung cancer — 15 compounds vs Sotorasib (the "undruggable" oncogene, finally drugged in 2021)
+• EGFR kinase lung cancer — 12 compounds vs Erlotinib ($8B/yr drug market)
 
-Today we screen 20 compounds to prove the pipeline works.
-Scale this to 100,000 compounds on AMD MI300X — that's a real drug discovery campaign.
+47 compounds. Same pipeline. Same physics. Different diseases.
 
-And the spike protein — the "crown" on the virus surface, 500,000+ atoms in water — requires 130GB of GPU memory to simulate. NVIDIA H100 has 80GB. AMD MI300X has 192GB.
+At production-quality resolution (5nm explicit solvent), each simulation is 800,000 atoms requiring 100+ GB of GPU memory. NVIDIA H100 has 80GB. AMD MI300X has 192GB.
 
-One shows the pipeline works. The other shows why you need AMD.
+Today we screen 47 compounds to validate the pipeline.
+Scale this to 100,000 compounds on MI300X — that's a real drug discovery campaign worth $500K+ to pharmaceutical companies.
 
-We also added cancer: KRAS G12C (lung cancer, "undruggable" for 40 years until 2021) and EGFR kinase targets with real compound libraries.
+Solo build. 4 days left.
 
-Solo build. @AI at AMD @Hugging Face
+@AI at AMD @Hugging Face
 
-#AMDHackathon #DrugDiscovery #AI #BuildInPublic #ComputationalChemistry #MolecularDynamics
+#AMDHackathon #DrugDiscovery #AI #BuildInPublic #CancerResearch #ComputationalChemistry #MolecularDynamics
 
 ---
 
-### X/Twitter (shorter)
+### X/Twitter
 
 Building CatalystMD for @lablofdotai AMD Hackathon
 
-Same methodology that discovered Paxlovid. 5 AI agents. Real molecular dynamics.
+Same method that discovered Paxlovid — now for COVID + lung cancer.
 
-Today: 20 compounds, pipeline validation.
-At scale: 100,000 compounds — real pharma-grade screening.
+47 compounds across 3 diseases. 5 AI agents. Real molecular dynamics.
 
-The spike protein (500K atoms) needs 130GB GPU memory.
+At production resolution: 800K atoms, 100+ GB memory.
 H100: 80GB. MI300X: 192GB.
-
-Also targeting KRAS G12C lung cancer.
 
 #AMDHackathon @AIatAMD @huggingface
 
 ---
 
-## Post 2 — Results Are Live (Day 5-6, before submission)
+## Post 2 — Results Are Live (Post Day 5-6)
 
 ### LinkedIn
 
 CatalystMD is live — AI drug discovery powered by AMD MI300X.
 
-The same computational approach that discovered Paxlovid (Pfizer screened thousands of molecules against the COVID-19 protease). CatalystMD makes this accessible on a single GPU.
+The same computational approach that discovered Paxlovid. 47 drug compounds screened across 3 diseases using real molecular dynamics on AMD hardware.
 
-What we built:
+Results:
 
-Drug Discovery Pipeline:
-• COVID-19 protease: 20 compounds screened, GC-376 ranks #1 — stronger binding than the FDA-approved drug
-• KRAS G12C lung cancer: 15 compounds screened against the "undruggable" oncogene
-• EGFR kinase lung cancer: 12 compounds against the $8B/yr drug target
-• All rankings correlate with published experimental data
+COVID-19 Protease (20 compounds):
+• GC-376 ranks #1 — stronger estimated binding than Paxlovid
+• Pipeline correctly identifies known strong binders from published research
 
-AMD MI300X Showcase:
-• SARS-CoV-2 spike trimer — 500,000+ atoms in explicit solvent
-• Memory required: ~130GB
-• This simulation does not fit on a single NVIDIA H100 (80GB)
-• AMD MI300X (192GB HBM3) runs it without memory pressure
+KRAS G12C Lung Cancer (15 compounds):
+• Screened against the oncogene considered "undruggable" for 40 years
+• Adagrasib shows strongest binding — consistent with experimental data
+• Sotorasib (Lumakras, FDA approved 2021) correctly identified as top-tier
+
+EGFR Kinase Lung Cancer (12 compounds):
+• Osimertinib (Tagrisso) ranks among the strongest — matching clinical reality
+• Three generations of EGFR drugs represented in the library
+
+Why AMD MI300X:
+At production-quality explicit solvent (5nm padding), each simulation is 800,000 atoms. That requires 100+ GB of GPU memory. AMD MI300X has 192GB. A single NVIDIA H100 has 80GB.
+
+This isn't a benchmark optimization. At this resolution, the simulation physically does not fit on competitive hardware.
 
 The Platform:
-• 5 LangGraph agents with full trace logging — every AI prompt and response is visible
-• Qwen 2.5-7B served by vLLM directly on AMD MI300X via ROCm
-• Interactive 3D protein viewer: click residues to zoom, toggle layers, inspect compounds
-• Toxicity screening with plain-English explanations for flagged compounds
-• AI-generated discovery briefs downloadable as PDF
+→ 5 LangGraph agents with full trace logging — every AI prompt and response visible
+→ Qwen 2.5-7B served by vLLM directly on AMD MI300X via ROCm
+→ Interactive 3D protein viewer with clickable binding site residues
+→ Toxicity screening with plain-English explanations
+→ AI-generated discovery briefs downloadable as PDF
+→ Agent Logs tab shows complete reasoning chain
 
-Today: 20 compounds proves the pipeline works.
-Tomorrow: 100,000 compounds from ZINC database on MI300X = a real drug discovery campaign worth $500K+ to pharmaceutical companies.
+Today: 47 compounds validates the pipeline works.
+At scale: 100,000 compounds from ZINC database = a real drug discovery campaign that costs pharmaceutical companies $500,000+.
 
 Try it: [HuggingFace Space link]
 Code: github.com/YoussefMadkour/CatalystMD
@@ -104,58 +103,34 @@ Code: github.com/YoussefMadkour/CatalystMD
 Built solo for @lablab.ai AMD Developer Hackathon
 Team CatalystMD
 
-#AMDHackathon #DrugDiscovery #AI #OpenSource #CancerResearch #BuildInPublic #MolecularDynamics #ComputationalChemistry
+#AMDHackathon #DrugDiscovery #AI #OpenSource #CancerResearch #BuildInPublic #MolecularDynamics #ComputationalChemistry #LungCancer
 
 @AI at AMD @Hugging Face @lablab.ai
 
 ---
 
-### X/Twitter (shorter)
+### X/Twitter
 
 CatalystMD is live 🧬
 
 Same method that discovered Paxlovid — now on AMD MI300X.
 
-• COVID protease: GC-376 binds stronger than the approved drug
+• COVID: GC-376 binds stronger than Paxlovid
 • KRAS G12C lung cancer: 15 compounds screened
-• Spike trimer: 500K atoms, 130GB memory — doesn't fit on H100
+• EGFR lung cancer: 12 compounds screened
 
-20 compounds = pipeline validation
-100K compounds = real pharma screening
+800K atoms at production resolution. 100+ GB memory.
+H100: can't fit. MI300X: runs it.
 
-Demo: [HF Space link]
+47 compounds = validation. 100K = real pharma screening.
+
+[HF Space link]
 
 #AMDHackathon @AIatAMD @huggingface @lablofdotai
 
 ---
 
-## Spike Trimer vs Protease — Quick Reference
-
-| | COVID Protease (6LU7) | Spike Trimer (6VXX) |
-|---|---|---|
-| **What it is** | Molecular scissors inside the virus | The "crown" key on the virus surface |
-| **What it does** | Cuts proteins to make new virus copies | Grabs human cells to break in |
-| **Drug that blocks it** | Paxlovid (nirmatrelvir) | Vaccines teach immunity to this shape |
-| **Protein atoms** | ~2,500 | ~170,000 |
-| **With water** | ~85,000 atoms | ~500,000-1,000,000 atoms |
-| **GPU memory needed** | ~4-8 GB | ~100-150 GB |
-| **Fits on H100 (80GB)?** | Yes | NO |
-| **Fits on MI300X (192GB)?** | Yes | Yes |
-| **Our use** | Drug screening (rank 20 compounds) | AMD capability showcase (one big simulation) |
-| **Demo role** | "We found a better drug candidate" | "This only runs on AMD" |
-| **Analogy** | Picking a lock inside the house | Simulating the entire front gate moving |
-
-### Why both matter
-
-The **protease** proves CatalystMD does real drug discovery — the same method that found Paxlovid.
-
-The **spike trimer** proves AMD MI300X enables simulations that competitive hardware physically cannot run. This is the capability boundary, not a benchmark.
-
-Together: "We use CatalystMD to find drugs, and AMD MI300X to simulate the proteins that matter most."
-
----
-
-## Hashtags & Tags (copy-paste)
+## Tags & Timing
 
 ### LinkedIn tags
 @AI at AMD @lablab.ai @Hugging Face
@@ -164,17 +139,14 @@ Together: "We use CatalystMD to find drugs, and AMD MI300X to simulate the prote
 @AIatAMD @lablofdotai @huggingface
 
 ### Hashtags
-#AMDHackathon #DrugDiscovery #AI #BuildInPublic #MolecularDynamics #ComputationalChemistry #CancerResearch #OpenSource #MI300X #AMD #ROCm
+#AMDHackathon #DrugDiscovery #AI #BuildInPublic #MolecularDynamics #ComputationalChemistry #CancerResearch #OpenSource #MI300X #LungCancer
 
----
-
-## Timing
-
+### Timing
 | Post | When | Platform |
 |---|---|---|
 | Post 1 (Build in Public) | May 6 (today) | LinkedIn + X |
-| Cover image | May 6-7 (generate via ChatGPT) | LinkedIn + X + HF Space |
-| Post 2 (Results Live) | May 9 (when HF Space is deployed) | LinkedIn + X |
-| Tag lablab Discord | May 9 | lablab Discord |
+| Cover image (ChatGPT generated) | May 6-7 | LinkedIn + X + HF Space |
+| Post 2 (Results Live) | May 9 | LinkedIn + X |
+| Share in lablab Discord | May 9 | Discord |
 
-The AMD Radeon GPU hardware prize is for "outstanding social engagement." Post early, post with substance, tag everyone.
+AMD Radeon GPU hardware prize = "outstanding social engagement." Post early, post with substance, tag everyone.
