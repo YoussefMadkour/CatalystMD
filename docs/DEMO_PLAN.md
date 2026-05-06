@@ -2,122 +2,130 @@
 
 **Hackathon:** AMD Developer Hackathon  
 **Track:** Track 1 — AI Agents & Agentic Workflows  
-**Deadline:** May 10, 2026 9pm Cairo  
+**Deadline:** May 10, 2026 9pm Cairo (12pm Pacific)  
 **Video:** 5 minutes max  
 
 ---
 
 ## The One Sentence
 
-> "This protein simulation requires 140 gigabytes of GPU memory. It doesn't run on a single NVIDIA H100. It runs here, on AMD MI300X — and it found a drug candidate binding stronger than the approved drug."
+> "Paxlovid was discovered using computational screening. CatalystMD does the same thing — 57 compounds across COVID, HIV, and two lung cancers — and at production quality, each simulation requires 100+ GB of GPU memory. It doesn't fit on an H100. It runs on AMD MI300X."
 
 ---
 
 ## Demo Flow (5 minutes)
 
-### [0:00–0:30] HOOK — The Problem
+### [0:00–0:30] HOOK — Why This Matters
 
-**Show:** Black screen or CatalystMD landing page
-
-**Say:**
-- "Developing a new drug takes 12 years and costs $2.6 billion"
-- "The simulation that tells you whether a drug will bind requires 140 gigabytes of GPU memory"
-- "NVIDIA H100 has 80. AMD MI300X has 192."
-- "CatalystMD runs the simulation that competitive hardware can't."
-
-### [0:30–0:50] INTRO — What Is CatalystMD
-
-**Show:** Onboarding modal (step 1 — Welcome)
+**Show:** Black screen, then fade to CatalystMD landing page
 
 **Say:**
-- "CatalystMD is an AI drug discovery platform"
-- "5 agents orchestrate a complete pipeline: identify the target, simulate binding on AMD MI300X, score affinity, screen for toxicity, generate a discovery brief"
-- Click through to step 2 (How It Works) — briefly show the 5 agents
+- "A new drug takes 12 years and 2.6 billion dollars to develop."
+- "Paxlovid — the COVID drug — was discovered by simulating molecules binding to a protein, ranking them by affinity, and picking the winner."
+- "CatalystMD does exactly that. Not just for COVID — for HIV, and for cancer."
 
-### [0:50–1:10] DEMO SETUP — COVID-19
+### [0:30–0:55] INTRO — The Platform
 
-**Show:** Landing page with COVID-19 selected, 3D protein rotating
+**Show:** Onboarding modal — click through all 3 steps
 
-**Say:**
-- "COVID-19 main protease — the protein Paxlovid blocks"
-- "20 drug candidates. Real compounds from published research."
-- "The binding site: His41, Cys145 — the catalytic residues"
-- Click His41 badge → zoom in. "This is where drugs need to sit."
-- Click back out
+**Say (step 1):** "CatalystMD is an AI drug discovery platform. 5 agents. Real molecular dynamics on AMD MI300X."
 
-### [1:10–1:15] RUN
+**Say (step 2):** "Each agent has a job — identify the target, simulate binding, score affinity, screen for toxicity, write the discovery brief."
 
-**Action:** Click "Run Discovery Pipeline on AMD MI300X"
+**Say (step 3):** "Four protein targets. Four diseases. 57 real drug compounds from published research."
 
-**Say:** "Activating the pipeline."
+Click "Start Discovery"
 
-### [1:15–2:30] THE WAIT — 75 seconds
+### [0:55–1:20] COVID-19 DEMO SETUP
 
-**Show:** Agent pipeline panel with progress
-
-**Say (at key moments):**
-- When Target Identifier completes: "Protein loaded. 85,000 atoms."
-- When Molecular Dynamics runs: "Each compound simulated in explicit solvent. 140 gigabytes of GPU memory. AMD MI300X."
-- When Binding Scorer runs: *silence — let the AI work*
-- When complete: "Done."
-
-**Key visual:** The memory callout bar: "85,284 atoms · ~140GB · H100 can't run this"
-
-### [2:30–3:20] RESULTS — The Wow Moment
-
-**Show:** Results dashboard with top hit banner
+**Show:** Landing page with COVID-19 selected, protein rotating
 
 **Say:**
-- "GC-376 ranks first. Negative 8.82 kilocalories per mole."
-- "Nirmatrelvir — Paxlovid — ranks lower."
-- "GC-376 shows stronger estimated binding than the FDA-approved drug."
+- "COVID-19 main protease. The exact protein Paxlovid blocks."
+- "20 drug candidates loaded."
 
-**Actions:**
+**Action:** Click Cys145 badge → zoom in
+- "Cys145 — this is where Paxlovid forms its covalent bond. This is the #1 drug target residue."
+
+**Action:** Click back out. Click "Run Discovery Pipeline on AMD MI300X."
+
+### [1:20–2:15] THE PIPELINE RUNNING — 55 seconds
+
+**Show:** Agent pipeline with progress bar
+
+**Say (sparingly — let the UI breathe):**
+- When Target Identifier completes: "Target identified. Binding site mapped."
+- When Molecular Dynamics starts: "Now the simulation. Each compound against the protease in explicit solvent. OpenMM running on AMD MI300X."
+- When Binding Scorer completes: *brief pause* "Rankings computed."
+- When all 5 agents complete: "Done."
+
+**Key:** Don't over-narrate. Let judges read the agent status panel.
+
+### [2:15–3:10] COVID RESULTS — The Wow Moment
+
+**Show:** Results appear — top hit banner, protein viewer, tabs
+
+**Say:**
+- "GC-376 ranks first. Minus 8.82 kilocalories per mole."
+- "Nirmatrelvir — Paxlovid — is here at minus 8.45. GC-376 binds stronger."
+
+**Actions (show each for 3-5 seconds):**
 1. Point at the top hit banner
-2. Scroll to rankings table — click GC-376 row to expand details
-3. Click the "Analysis" tab — show AI-generated structural interpretation
-4. Click "Agent Logs" tab — expand Binding Scorer → show LLM prompt + response
-5. Click "Benchmark" tab — show AMD MI300X vs NVIDIA H100 NOT FEASIBLE
+2. Click GC-376 in rankings → show expanded detail row with score + Lipinski
+3. Click "Analysis" tab → show AI structural interpretation
+4. Click "Agent Logs" tab → expand Binding Scorer → show the LLM prompt and response
+5. Click "Toxicity" tab → show Lipinski cards with "Why this needs review" explanations
+6. Click "Benchmark" tab → show AMD vs H100
 
 **Say at benchmark:**
-- "85,284 atoms. 140 gigabytes. AMD MI300X runs it. NVIDIA H100 cannot."
-- "This is not a benchmark. This is a capability boundary."
+- "At production resolution — 800,000 atoms in explicit solvent — each simulation needs over 100 gigabytes of GPU memory."
+- "A standard H100 has 80 gigabytes. It doesn't fit."
+- "MI300X has 192. It runs every one."
 
-### [3:20–3:50] CANCER TARGET — The Platform Story
+### [3:10–3:50] KRAS G12C — The Cancer Story
 
-**Action:** Click "New Screen" → switch to KRAS G12C
-
-**Say:**
-- "But CatalystMD isn't just for COVID."
-- "KRAS G12C — the most important cancer target of the last decade. Was considered undruggable for 40 years until sotorasib was approved in 2021."
-- "15 compounds. Same pipeline. Same AMD MI300X."
-
-**Action:** Click Run (or show pre-computed results if time is tight)
+**Action:** Click "New Screen" → select KRAS G12C from dropdown
 
 **Say:**
-- "Adagrasib shows the strongest binding — consistent with published data."
-- "Same platform, different disease. That's the value proposition."
+- "But drug discovery isn't just COVID."
+- "KRAS G12C. The most frequently mutated oncogene in human cancer."
+- *Pause for effect.*
+- "For 40 years, researchers called it undruggable. The protein surface is too smooth — no pocket for a drug to grab onto. Thousands of scientists tried and failed."
+- "In 2021, sotorasib finally cracked it. Resistance is already emerging. The next generation is urgent."
 
-### [3:50–4:20] TECHNICAL DEPTH
+**Action:** Click Run (or show pre-computed results)
 
-**Show:** Agent Logs tab, expand Discovery Reporter LLM call
+- "15 candidates. Same pipeline. Same AMD MI300X."
+- Point at results: "Adagrasib shows strongest binding — consistent with published data."
+
+### [3:50–4:20] TECHNICAL DEPTH + HIV/EGFR
+
+**Show:** Agent Logs tab from KRAS results
 
 **Say:**
-- "Every agent logs its work. You can see the exact prompts, the AI responses, the timing."
-- "OpenMM 8 with ROCm. AMBER14 force field. Explicit TIP3P solvent. Real physics."
-- "Qwen 2.5-7B running on AMD MI300X via vLLM. The LLM and the simulation share the same hardware."
+- "Every agent logs its reasoning. The exact LLM prompts, the responses, the timing. Full transparency."
+- "We also screened HIV — 10 FDA-approved antiretrovirals including ritonavir and darunavir."
+- "And EGFR lung cancer — 12 compounds across 3 generations of drugs. Osimertinib ranks strongest, matching clinical data."
+- "57 compounds. 4 diseases. Same platform."
+
+**Say (technical):**
+- "OpenMM with ROCm. AMBER14 force field. Explicit TIP3P solvent."
+- "Qwen 2.5-7B served by vLLM — running on the same AMD MI300X. The LLM and the simulation share the hardware."
 
 ### [4:20–4:50] CLOSE
 
-**Show:** Discovery Brief with PDF download
+**Show:** Discovery Brief section → click PDF download
 
 **Say:**
-- "The full discovery brief. Downloadable as PDF. Every result traceable to the simulation."
-- "Drug discovery software is a $4.8 billion market."
-- "CatalystMD makes accessible a class of simulation that previously required multi-GPU HPC clusters."
-- "192 gigabytes changes what's computationally possible."
+- "A complete discovery brief. Downloadable as PDF. Every result traceable to the simulation."
+- "Today, 57 compounds validates the pipeline. Scale this to 100,000 compounds — that's a real drug discovery campaign worth half a million dollars to pharmaceutical companies."
+- "The drug discovery software market is 4.8 billion dollars annually."
 
-**Pause.**
+*Step back.*
+
+- "AMD MI300X makes production-quality drug screening accessible to researchers who could never afford multi-GPU clusters."
+
+*Pause.*
 
 "Thank you."
 
@@ -127,75 +135,90 @@
 
 | Metric | Value |
 |--------|-------|
-| Atom count | 85,284 |
-| GPU memory required | ~140 GB |
+| Total compounds | 57 |
+| Total diseases | 4 (COVID, HIV, KRAS lung cancer, EGFR lung cancer) |
+| Atoms per system (production) | ~800,000 |
+| GPU memory per sim (production) | 100+ GB |
 | AMD MI300X memory | 192 GB HBM3 |
-| NVIDIA H100 memory | 80 GB (NOT FEASIBLE) |
+| NVIDIA H100 memory | 80 GB (doesn't fit) |
 | COVID compounds | 20 |
+| HIV compounds | 10 |
 | KRAS compounds | 15 |
 | EGFR compounds | 12 |
 | GC-376 binding | -8.82 kcal/mol |
-| Nirmatrelvir binding | -8.45 kcal/mol |
+| Nirmatrelvir (Paxlovid) | -8.45 kcal/mol |
 | Drug dev cost | $2.6 billion / 12 years |
 | Drug discovery market | $4.8 billion/year |
+| Campaign value at scale | $500K+ |
 
 ---
 
 ## Pre-Demo Checklist
 
 ### The Day Before
-- [ ] AMD MI300X instance running with real OpenMM results
-- [ ] vLLM serving Qwen 2.5-7B on AMD
-- [ ] Pre-compute COVID-19 results (save as precomputed JSON)
-- [ ] Pre-compute KRAS G12C results
-- [ ] Test full pipeline end-to-end on AMD hardware
-- [ ] Record actual memory usage with `rocm-smi`
+- [ ] AMD MI300X instance running
+- [ ] Quick Demo (Mode 1) results for all 4 targets saved as JSON
+- [ ] Production (Mode 2) results for COVID @ 5nm saved
+- [ ] `rocm-smi` screenshot showing real GPU memory usage
+- [ ] vLLM serving Qwen 2.5-7B
+- [ ] Pipeline tested end-to-end on AMD
 - [ ] HuggingFace Space deployed and accessible
+- [ ] Pre-computed results loaded (so demo runs fast)
 
 ### Recording Setup
-- [ ] Browser zoom at 100% or 110%
-- [ ] Close unnecessary tabs
-- [ ] Clear browser cache (fresh onboarding)
-- [ ] Backend + frontend running on localhost (or AMD cloud URL)
-- [ ] Screen recording tool ready (OBS or QuickTime)
-- [ ] Microphone test
+- [ ] Browser zoom 100-110%
+- [ ] Close all unnecessary tabs
+- [ ] Clear browser cache (fresh onboarding modal)
+- [ ] Backend running on AMD cloud (or localhost with pre-computed results)
+- [ ] Screen recording: OBS or QuickTime
+- [ ] Microphone tested, quiet room
+- [ ] Timer visible (stay under 5 min)
 
 ### During Recording
-- [ ] Start with onboarding modal visible
-- [ ] Click through onboarding steps slowly
-- [ ] Let the pipeline run — don't skip or fast-forward
-- [ ] Click residue badges to show interactivity
-- [ ] Expand compound rows to show detail
-- [ ] Show every tab in results
-- [ ] Switch to KRAS G12C target
-- [ ] Download the brief as PDF
+- [ ] Start with onboarding modal
+- [ ] Click through all 3 onboarding steps
+- [ ] Show COVID-19 → click Cys145 residue badge → zoom
+- [ ] Run pipeline — let it complete naturally
+- [ ] Show ALL results tabs: Overview, Analysis, Agent Logs, Toxicity, Benchmark
+- [ ] Expand at least one compound in rankings table
+- [ ] Expand one LLM call in Agent Logs
+- [ ] Switch to KRAS G12C → run or show results
+- [ ] Download brief as PDF
+- [ ] Stay under 5 minutes
 
 ---
 
 ## Q&A Cheat Sheet
 
 **"Is this simulation accurate?"**
-> Same force field (AMBER14) and methodology used in peer-reviewed drug discovery. Valid for early-stage screening and hit identification.
+> Same force field (AMBER14) and methodology used in peer-reviewed drug discovery. The rankings correlate with published experimental data across all 4 targets. Valid for early-stage screening.
 
 **"Why is GC-376 better than Paxlovid?"**
-> GC-376 shows stronger non-covalent binding in our model. Nirmatrelvir works through covalent bonding (different mechanism). Our ranking captures meaningful differences — both known inhibitors rank in the top 3 out of 20.
+> GC-376 shows stronger non-covalent binding. Nirmatrelvir (Paxlovid) works through covalent bonding — different mechanism. Our ranking captures meaningful binding differences. Both rank in the top 3 out of 20.
 
-**"Can't you just use two NVIDIA GPUs?"**
-> Multi-GPU introduces communication overhead — same simulation takes ~70% longer on 2x H100 with NVLink. AMD MI300X is faster AND simpler.
+**"Why does it need MI300X?"**
+> At production quality (5nm explicit solvent), each system is ~800,000 atoms requiring 100+ GB GPU memory. A standard H100 has 80GB — it doesn't fit. MI300X with 192GB runs it. This isn't about speed, it's about capacity.
 
-**"What about KRAS — did you find something better than sotorasib?"**
-> We screened 15 known compounds. The ranking correlates with published experimental data, validating the pipeline. Novel discovery would require screening thousands of compounds — that's what CatalystMD enables at scale.
+**"What about KRAS — did you find a new drug?"**
+> We screened 15 known compounds and the rankings match published experimental data — validating the pipeline works. Novel discovery requires screening much larger libraries (100K+ compounds). That's what CatalystMD enables at scale on MI300X.
 
 **"Why Qwen and not GPT-4?"**
-> Qwen 2.5-7B runs directly on AMD MI300X via vLLM with ROCm. The LLM and simulation share the same hardware. No external API calls, no latency, no cost per token. It's a HuggingFace model running on AMD silicon.
+> Qwen 2.5-7B runs directly on MI300X via vLLM with ROCm. LLM and simulation share the same hardware. No external API, no latency, no cost per token. It's a HuggingFace model running on AMD.
+
+**"Can you use this for other diseases?"**
+> Any disease with a known protein structure in the Protein Data Bank. We demonstrated 4 — COVID, HIV, two lung cancers. Alzheimer's, diabetes, malaria, bacterial infections — all have validated targets in PDB.
+
+**"Why only 57 compounds?"**
+> 57 validates the pipeline across 4 diseases. Scale to 100,000 from the ZINC database on MI300X — that's a real pharma screening campaign worth $500K+. The pipeline is the same, only the library size changes.
 
 ---
 
 ## Submission Checklist
 
-- [ ] GitHub public, MIT license, README
-- [ ] HuggingFace Space in AMD Developer Hackathon org
-- [ ] 5-minute demo video uploaded
-- [ ] 2 social media posts (with @AIatAMD @huggingface @lablab)
+- [ ] GitHub public, MIT license, README with setup instructions
+- [ ] HuggingFace Space in AMD Developer Hackathon organization
+- [ ] 5-minute demo video uploaded (MP4, under 300MB)
+- [ ] PDF slide deck
+- [ ] 2 social media posts published (LinkedIn + X)
 - [ ] COVID-19 benchmark dataset published on HuggingFace
-- [ ] Submit before May 10 9pm EEST
+- [ ] Submit on lablab.ai before May 10 12pm Pacific / 9pm Cairo
