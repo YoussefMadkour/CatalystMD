@@ -9,9 +9,9 @@ interface TargetSelectorProps {
 }
 
 const TARGETS = [
-  { pdb_id: "6LU7", name: "COVID-19 Main Protease", desc: "SARS-CoV-2 Mpro — Paxlovid target", category: "Antiviral" },
-  { pdb_id: "6OIM", name: "KRAS G12C (Lung Cancer)", desc: "Oncogene — Sotorasib (Lumakras) target", category: "Cancer" },
-  { pdb_id: "1M17", name: "EGFR Kinase (Lung Cancer)", desc: "Receptor kinase — Erlotinib (Tarceva) target", category: "Cancer" },
+  { pdb_id: "6LU7", name: "COVID-19 Main Protease", desc: "SARS-CoV-2 Mpro, Paxlovid target", category: "Antiviral" },
+  { pdb_id: "6OIM", name: "KRAS G12C (Lung Cancer)", desc: "Oncogene, Sotorasib (Lumakras) target", category: "Cancer" },
+  { pdb_id: "1M17", name: "EGFR Kinase (Lung Cancer)", desc: "Receptor kinase, Erlotinib (Tarceva) target", category: "Cancer" },
   { pdb_id: "1HIV", name: "HIV-1 Protease", desc: "Classic antiretroviral target", category: "Antiviral" },
 ];
 

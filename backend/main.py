@@ -78,14 +78,27 @@ async def start_run(req: RunRequest):
     }
 
     async def _run():
-        def progress_cb(agent_name: str, status: str):
+        def progress_cb(agent_name: str, status: str, **kwargs):
             jobs[job_id]["agent_status"][agent_name] = status
+            event = {
+                "agent": agent_name,
+                "agent_display": AGENT_DISPLAY.get(agent_name, agent_name),
+                "status": status,
+            }
+            if "compound" in kwargs:
+                event["compound"] = kwargs["compound"]
+                event["total"] = kwargs.get("total", 0)
+                event["compound_name"] = kwargs.get("name", "")
+                jobs[job_id]["compound_progress"] = {
+                    "current": kwargs["compound"],
+                    "total": kwargs.get("total", 0),
+                    "name": kwargs.get("name", ""),
+                }
+            if "step" in kwargs:
+                event["step"] = kwargs["step"]
+                jobs[job_id]["current_step"] = kwargs["step"]
             try:
-                jobs[job_id]["events"].put_nowait({
-                    "agent": agent_name,
-                    "agent_display": AGENT_DISPLAY.get(agent_name, agent_name),
-                    "status": status,
-                })
+                jobs[job_id]["events"].put_nowait(event)
             except asyncio.QueueFull:
                 pass
 
@@ -135,7 +148,12 @@ async def get_results(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     job = jobs[job_id]
     if job["status"] == "running":
-        return {"status": "running", "agent_status": job["agent_status"]}
+        resp = {"status": "running", "agent_status": job["agent_status"]}
+        if "compound_progress" in job:
+            resp["compound_progress"] = job["compound_progress"]
+        if "current_step" in job:
+            resp["current_step"] = job["current_step"]
+        return resp
     if job["status"] == "failed":
         raise HTTPException(status_code=500, detail=job.get("error", "Pipeline failed"))
 
@@ -148,12 +166,14 @@ async def get_results(job_id: str):
         "discovery_brief": result.get("discovery_brief"),
         "agent_traces": result.get("agent_traces", []),
         "benchmark": {
-            "atom_count": result.get("atom_count"),
-            "simulation_time_seconds": result.get("amd_simulation_time"),
-            "platform": result.get("platform_used"),
+            "atom_count": result.get("atom_count", 0),
+            "simulation_time_seconds": result.get("amd_simulation_time", 0),
+            "platform": result.get("platform_used", "unknown"),
             "total_compounds": len(result.get("simulation_results", [])),
-            "memory_required_gb": 140,
-            "nvidia_h100_feasible": False,
+            "method": result.get("simulation_results", [{}])[0].get("method", "unknown") if result.get("simulation_results") else "unknown",
+            "memory_required_gb": 2,
+            "prod_memory_required_gb": 140,
+            "prod_atom_count": 800000,
         },
     }
 
@@ -171,7 +191,7 @@ async def get_protein(pdb_id: str):
 async def list_targets():
     return {
         "targets": [
-            {"pdb_id": k, "name": v["name"]}
+            {"pdb_id": k, "name": v["name"], "ligand_id": v.get("ligand_id", "UNK")}
             for k, v in KNOWN_TARGETS.items()
         ]
     }

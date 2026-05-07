@@ -3,7 +3,10 @@ import hashlib
 import json
 from pathlib import Path
 
-from backend.config import PRECOMPUTED_DIR, FAST_SCORING_STEPS, SOLVENT_PADDING_NM
+from backend.config import PRECOMPUTED_DIR, FAST_SCORING_STEPS
+
+# Cache the prepared simulation to avoid re-fixing PDB for every compound
+_prepared_simulations: dict[str, tuple] = {}
 
 
 def _precomputed_path(pdb_id: str, compound_id: str) -> Path:
@@ -43,6 +46,41 @@ def _deterministic_score(compound: dict, pdb_id: str) -> float:
     return round(base, 2)
 
 
+def _prepare_protein(protein_pdb_path: str, pdb_id: str):
+    """Prepare protein once: fix PDB, build system, cache for reuse."""
+    if pdb_id in _prepared_simulations:
+        return _prepared_simulations[pdb_id]
+
+    from pdbfixer import PDBFixer
+    import openmm as mm
+    import openmm.app as app
+    import openmm.unit as unit
+    from backend.simulation.openmm_runner import get_platform
+
+    fixer = PDBFixer(filename=str(protein_pdb_path))
+    fixer.removeHeterogens(False)
+    fixer.missingResidues = {}
+    fixer.findMissingAtoms()
+    fixer.addMissingAtoms()
+    fixer.addMissingHydrogens(pH=7.0)
+
+    atom_count = fixer.topology.getNumAtoms()
+
+    # Implicit solvent (OBC2) — no water box, fast, still real physics
+    forcefield = app.ForceField("amber14-all.xml", "implicit/obc2.xml")
+    system = forcefield.createSystem(
+        fixer.topology,
+        nonbondedMethod=app.NoCutoff,
+        constraints=app.HBonds,
+    )
+
+    platform, properties = get_platform()
+
+    prepared = (fixer.topology, fixer.positions, system, platform, properties, atom_count)
+    _prepared_simulations[pdb_id] = prepared
+    return prepared
+
+
 def run_fast_scoring(
     protein_pdb_path: str,
     pdb_id: str,
@@ -54,7 +92,9 @@ def run_fast_scoring(
 
     try:
         return _run_openmm_fast(protein_pdb_path, compound, pdb_id)
-    except Exception:
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return _run_fallback(compound, pdb_id)
 
 
@@ -62,31 +102,15 @@ def _run_openmm_fast(protein_pdb_path: str, compound: dict, pdb_id: str) -> dict
     import openmm as mm
     import openmm.app as app
     import openmm.unit as unit
-    from backend.simulation.openmm_runner import get_platform
 
-    pdb = app.PDBFile(str(protein_pdb_path))
-    forcefield = app.ForceField("amber14-all.xml", "amber14/tip3pfb.xml")
+    topology, positions, system, platform, properties, atom_count = _prepare_protein(protein_pdb_path, pdb_id)
 
-    modeller = app.Modeller(pdb.topology, pdb.positions)
-    modeller.addSolvent(forcefield, model="tip3p", padding=SOLVENT_PADDING_NM * unit.nanometers)
-
-    atom_count = modeller.topology.getNumAtoms()
-    system = forcefield.createSystem(
-        modeller.topology,
-        nonbondedMethod=app.PME,
-        nonbondedCutoff=1.0 * unit.nanometers,
-        constraints=app.HBonds,
-    )
-
-    platform, properties = get_platform()
     integrator = mm.LangevinMiddleIntegrator(
         300 * unit.kelvin, 1 / unit.picosecond, 0.002 * unit.picoseconds
     )
 
-    simulation = app.Simulation(
-        modeller.topology, system, integrator, platform, properties
-    )
-    simulation.context.setPositions(modeller.positions)
+    simulation = app.Simulation(topology, system, integrator, platform, properties)
+    simulation.context.setPositions(positions)
 
     start = time.perf_counter()
     simulation.minimizeEnergy(maxIterations=FAST_SCORING_STEPS)
@@ -107,7 +131,7 @@ def _run_openmm_fast(protein_pdb_path: str, compound: dict, pdb_id: str) -> dict
         "wall_time_seconds": round(elapsed, 2),
         "platform": platform.getName(),
         "atom_count": atom_count,
-        "method": "fast_minimization",
+        "method": "implicit_solvent_minimization",
     }
     return result
 
@@ -128,6 +152,6 @@ def _run_fallback(compound: dict, pdb_id: str) -> dict:
         "potential_energy_kj_mol": round(-850000 + binding_score * 1000, 1),
         "wall_time_seconds": round(elapsed, 2),
         "platform": "CPU-fallback",
-        "atom_count": 85284,
+        "atom_count": 0,
         "method": "deterministic_estimate",
     }

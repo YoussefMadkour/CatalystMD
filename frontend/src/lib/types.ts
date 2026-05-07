@@ -27,14 +27,19 @@ export interface RankingEntry {
   compound_id: string;
   compound_name: string;
   binding_score_kcal_mol: number;
-  vs_nirmatrelvir: "stronger" | "weaker" | "similar";
-  delta_vs_nirmatrelvir: number;
+  vs_nirmatrelvir?: "stronger" | "weaker" | "similar";
+  delta_vs_nirmatrelvir?: number;
+  vs_reference?: "stronger" | "weaker" | "similar";
+  delta_vs_reference?: number;
   known_ki_nm: number | null;
 }
 
 export interface BindingRankings {
   rankings: RankingEntry[];
-  nirmatrelvir_reference_score: number;
+  nirmatrelvir_reference_score?: number;
+  reference_drug_id?: string;
+  reference_drug_name?: string;
+  reference_score?: number;
   top_hit: RankingEntry;
   interpretation: string;
   total_screened: number;
@@ -65,8 +70,10 @@ export interface Benchmark {
   simulation_time_seconds: number;
   platform: string;
   total_compounds: number;
+  method: string;
   memory_required_gb: number;
-  nvidia_h100_feasible: boolean;
+  prod_memory_required_gb: number;
+  prod_atom_count: number;
 }
 
 export interface LLMCall {

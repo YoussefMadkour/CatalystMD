@@ -155,15 +155,15 @@ function AnalysisTab({ results }: { results: PipelineResults }) {
           <div className="text-xs text-slate-500">vs</div>
           <div className="text-center">
             <div className="text-lg font-bold text-slate-400">{nirRef?.toFixed(2) ?? "-8.30"}</div>
-            <div className="text-[10px] text-slate-500">Nirmatrelvir (Paxlovid)</div>
+            <div className="text-[10px] text-slate-500">{results.binding_rankings?.reference_drug_name ?? "Reference drug"}</div>
           </div>
           <div className="ml-auto">
             <span className={`rounded-full px-3 py-1 text-xs font-bold ${
-              top.vs_nirmatrelvir === "stronger"
+              (top.vs_reference ?? top.vs_nirmatrelvir) === "stronger"
                 ? "bg-emerald-500/15 text-emerald-400"
                 : "bg-slate-500/15 text-slate-400"
             }`}>
-              {top.delta_vs_nirmatrelvir > 0 ? "+" : ""}{top.delta_vs_nirmatrelvir.toFixed(2)} kcal/mol
+              {(top.delta_vs_reference ?? top.delta_vs_nirmatrelvir ?? 0) > 0 ? "+" : ""}{(top.delta_vs_reference ?? top.delta_vs_nirmatrelvir ?? 0).toFixed(2)} kcal/mol
             </span>
           </div>
         </div>
@@ -201,10 +201,10 @@ function AnalysisTab({ results }: { results: PipelineResults }) {
 function getReviewReason(tox: PipelineResults["toxicity_profiles"][0]): string {
   const issues: string[] = [];
   const lip = tox.lipinski;
-  if (lip.molecular_weight > 500) issues.push(`Molecular weight (${lip.molecular_weight} Da) exceeds 500 Da limit — larger molecules have difficulty crossing cell membranes`);
-  if (lip.logP > 5) issues.push(`LogP (${lip.logP}) exceeds 5 — too hydrophobic for good oral absorption`);
-  if (lip.H_bond_donors > 5) issues.push(`${lip.H_bond_donors} hydrogen bond donors exceeds limit of 5 — reduces membrane permeability`);
-  if (lip.H_bond_acceptors > 10) issues.push(`${lip.H_bond_acceptors} hydrogen bond acceptors exceeds limit of 10 — reduces oral bioavailability`);
+  if (lip.molecular_weight > 500) issues.push(`Molecular weight (${lip.molecular_weight} Da) exceeds 500 Da limit,larger molecules have difficulty crossing cell membranes`);
+  if (lip.logP > 5) issues.push(`LogP (${lip.logP}) exceeds 5,too hydrophobic for good oral absorption`);
+  if (lip.H_bond_donors > 5) issues.push(`${lip.H_bond_donors} hydrogen bond donors exceeds limit of 5,reduces membrane permeability`);
+  if (lip.H_bond_acceptors > 10) issues.push(`${lip.H_bond_acceptors} hydrogen bond acceptors exceeds limit of 10,reduces oral bioavailability`);
   if (issues.length === 0) return "Borderline on one or more Lipinski criteria.";
   return issues.join(". ") + ".";
 }

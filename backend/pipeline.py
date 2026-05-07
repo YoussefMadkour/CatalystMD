@@ -30,7 +30,10 @@ def _wrap_node(fn: Callable, name: str, callback: Callable | None = None):
     def wrapper(state: dict) -> dict:
         if callback:
             callback(name, "running")
-        result = fn(state)
+        if callback:
+            result = fn(state, progress_cb=callback)
+        else:
+            result = fn(state)
         if callback:
             callback(name, "completed")
         return result

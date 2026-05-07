@@ -8,26 +8,45 @@ interface ProteinViewerProps {
   pdbData: string | null;
   bindingResidues?: string[];
   showLigand?: boolean;
+  ligandId?: string;
   selectedCompound?: RankingEntry | null;
   toxicityMap?: Map<string, ToxicityProfile>;
   onClearSelection?: () => void;
 }
 
 const RESIDUE_COLORS: Record<string, string> = {
+  // COVID-19 (6LU7)
   His41: "0xf59e0b",
   Cys145: "0xef4444",
   Glu166: "0x8b5cf6",
   His164: "0x06b6d4",
+  // KRAS G12C (6OIM)
+  Cys12: "0xef4444",
+  His95: "0xf59e0b",
+  Tyr96: "0x8b5cf6",
+  Asp69: "0x06b6d4",
+  // EGFR (1M17)
+  Met793: "0xef4444",
+  Thr790: "0xf59e0b",
+  Lys745: "0x8b5cf6",
+  Asp855: "0x06b6d4",
+  // HIV (1HIV)
+  Asp25: "0xef4444",
+  Thr26: "0xf59e0b",
+  Gly27: "0x8b5cf6",
+  "Asp25'": "0x06b6d4",
 };
 
 const RESIDUE_TIPS: Record<string, string> = {
-  His41: "Catalytic residue — activates the reaction that cuts viral proteins",
-  Cys145: "Where Paxlovid binds — the #1 drug target on this protein",
-  Glu166: "Shapes the pocket — determines which molecules can fit inside",
-  His164: "Holds the drug in place — stabilizes molecules in the correct position",
+  His41: "Catalytic residue, activates the reaction that cuts viral proteins",
+  Cys145: "Catalytic residue, primary drug binding site on this protein",
+  Glu166: "Shapes the pocket, determines which molecules can fit inside",
+  His164: "Holds the drug in place, stabilizes molecules in the correct position",
 };
 
-const LIGAND_TIP = "N3 inhibitor — a real drug molecule found inside the binding pocket when this protein was photographed by X-ray";
+function getLigandTip(id: string) {
+  return `${id} ligand — a real drug molecule found inside the binding pocket when this protein was crystallized`;
+}
 
 function parseResi(name: string): number | null {
   const m = name.match(/(\d+)/);
@@ -38,6 +57,7 @@ export default function ProteinViewer({
   pdbData,
   bindingResidues = [],
   showLigand = false,
+  ligandId = "N3",
   selectedCompound,
   toxicityMap,
   onClearSelection,
@@ -218,7 +238,7 @@ export default function ProteinViewer({
           <ViewToggle label="Protein" active={showProtein} color="#60a5fa" onToggle={() => setShowProtein((v) => !v)} />
           <ViewToggle label="Binding Site" active={showResidues} color="#fbbf24" onToggle={() => setShowResidues((v) => !v)} />
           {showLigand && (
-            <ViewToggle label="Ligand (N3)" active={showLigandToggle} color="#10b981" onToggle={() => setShowLigandToggle((v) => !v)} />
+            <ViewToggle label={`Ligand (${ligandId})`} active={showLigandToggle} color="#10b981" onToggle={() => setShowLigandToggle((v) => !v)} />
           )}
           <ViewToggle label="Spin" active={isSpinning} color="#94a3b8" onToggle={() => setIsSpinning((v) => !v)} />
         </div>
@@ -254,7 +274,7 @@ export default function ProteinViewer({
             );
           })}
           {showLigand && showLigandToggle && (
-            <Tooltip text={LIGAND_TIP}>
+            <Tooltip text={getLigandTip(ligandId)}>
               <button
                 onClick={() => {
                   if (focusedResidue === "__ligand") {
@@ -274,7 +294,7 @@ export default function ProteinViewer({
                   focusedResidue === "__ligand" ? "scale-110 border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-500/20" : "border-emerald-500/30 bg-emerald-500/10 hover:scale-105"
                 }`}
               >
-                Ligand (N3){focusedResidue === "__ligand" ? " ×" : ""}
+                {`Ligand (${ligandId})`}{focusedResidue === "__ligand" ? " ×" : ""}
               </button>
             </Tooltip>
           )}

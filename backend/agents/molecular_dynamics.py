@@ -3,7 +3,7 @@ import time
 from backend.simulation.fast_scorer import run_fast_scoring
 
 
-def run_molecular_dynamics(state: dict) -> dict:
+def run_molecular_dynamics(state: dict, progress_cb=None) -> dict:
     target = state["target_analysis"]
     compounds = state["compound_library"]
     pdb_id = target["pdb_id"]
@@ -14,6 +14,8 @@ def run_molecular_dynamics(state: dict) -> dict:
     compound_timings = []
 
     for i, compound in enumerate(compounds):
+        if progress_cb:
+            progress_cb("simulate", "running", compound=i + 1, total=len(compounds), name=compound["name"])
         c_start = time.perf_counter()
         result = run_fast_scoring(pdb_path, pdb_id, compound)
         c_elapsed = time.perf_counter() - c_start
@@ -38,13 +40,13 @@ def run_molecular_dynamics(state: dict) -> dict:
         "duration_seconds": round(total_elapsed, 2),
         "model": None,
         "input_summary": f"{len(compounds)} compounds against {pdb_id}",
-        "output_summary": f"Simulated {len(results)} compounds — {atom_count:,} atoms, "
+        "output_summary": f"Simulated {len(results)} compounds, {atom_count:,} atoms, "
                           f"platform: {platform}, total: {total_elapsed:.1f}s",
         "steps": [
-            {"action": "Load protein", "detail": f"{pdb_id} — {atom_count:,} atoms with explicit solvent"},
-            {"action": "Configure simulation", "detail": f"AMBER14 force field, PME electrostatics, TIP3P water"},
+            {"action": "Load protein", "detail": f"{pdb_id}, {atom_count:,} atoms with implicit solvent (OBC2)"},
+            {"action": "Configure simulation", "detail": f"AMBER14 force field, implicit solvent, energy minimization"},
             {"action": "Run scoring", "detail": f"{len(compounds)} compounds, {total_elapsed:.1f}s total"},
-            {"action": "Platform", "detail": f"{platform} — {'192GB HBM3' if 'OpenCL' in platform else 'CPU fallback'}"},
+            {"action": "Platform", "detail": f"{platform}, {'192GB HBM3' if 'OpenCL' in platform else 'CPU fallback'}"},
         ],
         "llm_calls": [],
         "compound_timings": compound_timings,

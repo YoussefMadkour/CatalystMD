@@ -6,10 +6,13 @@ interface CompoundOverlayProps {
   compound: RankingEntry;
   toxicity?: ToxicityProfile;
   onClose: () => void;
+  referenceDrugName?: string;
 }
 
-export default function CompoundOverlay({ compound, toxicity, onClose }: CompoundOverlayProps) {
-  const isStrong = compound.vs_nirmatrelvir === "stronger";
+export default function CompoundOverlay({ compound, toxicity, onClose, referenceDrugName = "reference" }: CompoundOverlayProps) {
+  const vs = compound.vs_reference ?? compound.vs_nirmatrelvir ?? "similar";
+  const delta = compound.delta_vs_reference ?? compound.delta_vs_nirmatrelvir ?? 0;
+  const isStrong = vs === "stronger";
 
   return (
     <div className="absolute inset-x-3 top-3 z-10 animate-fade-in rounded-xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur-xl">
@@ -43,15 +46,14 @@ export default function CompoundOverlay({ compound, toxicity, onClose }: Compoun
 
       <div className="mt-3 grid grid-cols-3 gap-2">
         <div className="rounded-lg bg-slate-50 p-2 text-center">
-          <div className={`text-xs font-bold ${isStrong ? "text-emerald-400" : compound.vs_nirmatrelvir === "similar" ? "text-slate-700" : "text-orange-400"}`}>
-            {compound.vs_nirmatrelvir === "stronger" ? "↑ STRONGER" :
-             compound.vs_nirmatrelvir === "similar" ? "≈ SIMILAR" : "↓ WEAKER"}
+          <div className={`text-xs font-bold ${isStrong ? "text-emerald-400" : vs === "similar" ? "text-slate-700" : "text-orange-400"}`}>
+            {vs === "stronger" ? "↑ STRONGER" : vs === "similar" ? "≈ SIMILAR" : "↓ WEAKER"}
           </div>
-          <div className="mt-0.5 text-[10px] text-slate-500">vs Paxlovid</div>
+          <div className="mt-0.5 text-[10px] text-slate-500">vs {referenceDrugName}</div>
         </div>
         <div className="rounded-lg bg-slate-50 p-2 text-center">
           <div className="text-xs font-bold text-slate-700">
-            {compound.delta_vs_nirmatrelvir > 0 ? "+" : ""}{compound.delta_vs_nirmatrelvir.toFixed(2)}
+            {delta > 0 ? "+" : ""}{delta.toFixed(2)}
           </div>
           <div className="mt-0.5 text-[10px] text-slate-500">delta kcal/mol</div>
         </div>
@@ -81,12 +83,6 @@ export default function CompoundOverlay({ compound, toxicity, onClose }: Compoun
           <span>Violations: {toxicity.lipinski.lipinski_violations}</span>
         </div>
       )}
-
-      {/* Binding site interaction hint */}
-      <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-600">
-        <div className="h-2 w-2 rounded-sm bg-yellow-500/60" />
-        <span>Binding site: His41, Cys145, Glu166, His164</span>
-      </div>
     </div>
   );
 }

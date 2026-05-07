@@ -28,7 +28,9 @@ export function pollStatus(
   jobId: string,
   onAgentUpdate: (agent: string, status: string) => void,
   onComplete: () => void,
-  onError: (err: string) => void
+  onError: (err: string) => void,
+  onCompoundProgress?: (current: number, total: number, name: string) => void,
+  onStepUpdate?: (step: string) => void
 ): () => void {
   let cancelled = false;
 
@@ -56,6 +58,16 @@ export function pollStatus(
           for (const [agent, status] of Object.entries(data.agent_status)) {
             onAgentUpdate(agent, status as string);
           }
+        }
+
+        // Update compound progress
+        if (data.compound_progress && onCompoundProgress) {
+          onCompoundProgress(data.compound_progress.current, data.compound_progress.total, data.compound_progress.name);
+        }
+
+        // Update current step
+        if (data.current_step && onStepUpdate) {
+          onStepUpdate(data.current_step);
         }
       } catch {
         if (!cancelled) {

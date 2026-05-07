@@ -7,17 +7,19 @@ interface AgentStatusPanelProps {
   atomCount?: number;
   currentCompound?: number;
   totalCompounds?: number;
+  compoundName?: string;
+  currentStep?: string | null;
 }
 
 const AGENTS: { key: AgentName; name: string; icon: string; description: string }[] = [
   { key: "identify_target", name: "Drug Target Identifier", icon: "🎯", description: "Fetching protein structure · identifying binding site" },
-  { key: "simulate", name: "Molecular Dynamics", icon: "⚛️", description: "AMD MI300X · OpenMM ROCm · Explicit Solvent" },
+  { key: "simulate", name: "Molecular Dynamics", icon: "⚛️", description: "AMD MI300X · OpenMM OpenCL · Implicit Solvent (OBC2)" },
   { key: "score_binding", name: "Binding Scorer", icon: "📊", description: "Ranking compounds by binding affinity" },
   { key: "screen_toxicity", name: "Toxicity Screener", icon: "🛡️", description: "Lipinski Rule of Five · PAINS filter" },
   { key: "generate_brief", name: "Discovery Reporter", icon: "📋", description: "Generating comprehensive discovery brief" },
 ];
 
-export default function AgentStatusPanel({ agentStatus, atomCount, currentCompound, totalCompounds }: AgentStatusPanelProps) {
+export default function AgentStatusPanel({ agentStatus, atomCount, currentCompound, totalCompounds, compoundName, currentStep }: AgentStatusPanelProps) {
   const completedCount = Object.values(agentStatus).filter((s) => s === "completed").length;
   const progress = (completedCount / AGENTS.length) * 100;
 
@@ -84,20 +86,20 @@ export default function AgentStatusPanel({ agentStatus, atomCount, currentCompou
                       </div>
                     )}
                   </div>
-                  {isRunning && <p className="mt-0.5 text-[11px] text-slate-400">{agent.description}</p>}
+                  {isRunning && <p className="mt-0.5 text-[11px] text-slate-400">{currentStep || agent.description}</p>}
                 </div>
               </div>
 
               {isRunning && isMD && (
                 <div className="relative mt-3 rounded-lg bg-white p-3 shadow-sm">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono font-bold text-blue-600">{atomCount?.toLocaleString() ?? "85,284"} atoms</span>
-                    <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">EXCEEDS H100 80GB</span>
+                    <span className="font-mono font-bold text-blue-600">{atomCount ? atomCount.toLocaleString() : "..."} atoms</span>
+                    <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-600">AMD MI300X OpenCL</span>
                   </div>
-                  {currentCompound != null && totalCompounds != null && (
+                  {currentCompound != null && totalCompounds != null && totalCompounds > 0 && (
                     <div className="mt-2">
                       <div className="flex justify-between text-[11px] text-slate-400">
-                        <span>Compound {currentCompound}/{totalCompounds}</span>
+                        <span>Compound {currentCompound}/{totalCompounds}{compoundName ? ` — ${compoundName}` : ""}</span>
                         <span>{Math.round((currentCompound / totalCompounds) * 100)}%</span>
                       </div>
                       <div className="mt-1 h-1 overflow-hidden rounded-full bg-slate-100">
@@ -108,7 +110,7 @@ export default function AgentStatusPanel({ agentStatus, atomCount, currentCompou
                     </div>
                   )}
                   <div className="mt-2 flex items-center gap-1 text-[10px] text-slate-400">
-                    <span>192GB HBM3</span><span>·</span><span>OpenMM ROCm</span><span>·</span><span>AMBER14</span>
+                    <span>MI300X 192GB</span><span>·</span><span>OpenMM OpenCL</span><span>·</span><span>AMBER14 + OBC2</span>
                   </div>
                 </div>
               )}

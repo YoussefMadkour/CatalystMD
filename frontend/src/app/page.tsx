@@ -22,6 +22,13 @@ import BindingRankings from "@/components/BindingRankings";
 import ResultsTabs from "@/components/ResultsTabs";
 import OnboardingModal from "@/components/OnboardingModal";
 
+const TARGET_LIGANDS: Record<string, string> = {
+  "6LU7": "N3",
+  "6OIM": "ARS",
+  "1M17": "AQ4",
+  "1HIV": "A77",
+};
+
 const INITIAL_AGENT_STATUS: AgentStatusMap = {
   identify_target: "pending",
   simulate: "pending",
@@ -40,6 +47,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCompound, setSelectedCompound] = useState<RankingEntry | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [compoundProgress, setCompoundProgress] = useState<{ current: number; total: number; name: string } | null>(null);
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
   const [compoundCount, setCompoundCount] = useState(20);
 
   useEffect(() => {
@@ -62,6 +71,8 @@ export default function Home() {
     setResults(null);
     setSelectedCompound(null);
     setAgentStatus(INITIAL_AGENT_STATUS);
+    setCompoundProgress(null);
+    setCurrentStep(null);
 
     try {
       const jobId = await startRun(selectedTarget);
@@ -90,6 +101,12 @@ export default function Home() {
         (err) => {
           setError(err);
           setAppState("idle");
+        },
+        (current, total, name) => {
+          setCompoundProgress({ current, total, name });
+        },
+        (step) => {
+          setCurrentStep(step);
         }
       );
     } catch (err) {
@@ -106,13 +123,16 @@ export default function Home() {
     setError(null);
   }, []);
 
+  const TARGET_RESIDUES: Record<string, string[]> = {
+    "6LU7": ["His41", "Cys145", "Glu166", "His164"],
+    "6OIM": ["Cys12", "His95", "Tyr96", "Asp69"],
+    "1M17": ["Met793", "Thr790", "Lys745", "Asp855"],
+    "1HIV": ["Asp25", "Thr26", "Gly27", "Asp25'"],
+  };
+
   const bindingResidues =
-    results?.target_analysis?.binding_site?.key_residues ?? [
-      "His41",
-      "Cys145",
-      "Glu166",
-      "His164",
-    ];
+    results?.target_analysis?.binding_site?.key_residues ??
+    TARGET_RESIDUES[selectedTarget] ?? [];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -147,6 +167,7 @@ export default function Home() {
                 <ProteinViewer
                   pdbData={pdbData}
                   bindingResidues={bindingResidues}
+                  ligandId={TARGET_LIGANDS[selectedTarget] || "UNK"}
                 />
               </div>
               <div className="space-y-4 lg:col-span-2">
@@ -192,26 +213,28 @@ export default function Home() {
               />
               <div className="mt-3 flex items-center justify-center gap-4 rounded-xl border border-blue-200 bg-blue-50 p-3">
                 <div className="text-center">
-                  <div className="font-mono text-lg font-bold text-blue-600">85,284</div>
-                  <div className="text-[10px] text-slate-500">atoms</div>
+                  <div className="font-mono text-lg font-bold text-blue-600">MI300X</div>
+                  <div className="text-[10px] text-slate-500">AMD OpenCL GPU</div>
                 </div>
                 <div className="h-8 w-px bg-slate-200" />
                 <div className="text-center">
-                  <div className="font-mono text-lg font-bold text-blue-600">~140GB</div>
-                  <div className="text-[10px] text-slate-500">GPU memory</div>
+                  <div className="font-mono text-lg font-bold text-blue-600">AMBER14</div>
+                  <div className="text-[10px] text-slate-500">force field</div>
                 </div>
                 <div className="h-8 w-px bg-slate-200" />
                 <div className="text-center">
-                  <div className="font-mono text-lg font-bold text-red-600">H100</div>
-                  <div className="text-[10px] text-red-500">can&apos;t run this</div>
+                  <div className="font-mono text-lg font-bold text-blue-600">OBC2</div>
+                  <div className="text-[10px] text-slate-500">implicit solvent</div>
                 </div>
               </div>
             </div>
             <div className="lg:col-span-2">
               <AgentStatusPanel
                 agentStatus={agentStatus}
-                atomCount={85284}
-                totalCompounds={20}
+                currentCompound={compoundProgress?.current}
+                totalCompounds={compoundProgress?.total ?? compoundCount}
+                compoundName={compoundProgress?.name}
+                currentStep={currentStep}
               />
             </div>
           </div>
@@ -237,10 +260,10 @@ export default function Home() {
                       </span>
                       <span className="text-slate-300">&middot;</span>
                       <span className="font-semibold text-emerald-600">
-                        {results.binding_rankings.top_hit.vs_nirmatrelvir === "stronger"
+                        {(results.binding_rankings.top_hit.vs_reference ?? results.binding_rankings.top_hit.vs_nirmatrelvir) === "stronger"
                           ? "STRONGER"
-                          : results.binding_rankings.top_hit.vs_nirmatrelvir.toUpperCase()}{" "}
-                        than Paxlovid
+                          : (results.binding_rankings.top_hit.vs_reference ?? results.binding_rankings.top_hit.vs_nirmatrelvir ?? "").toUpperCase()}{" "}
+                        than {results.binding_rankings.reference_drug_name ?? "Paxlovid"}
                       </span>
                     </div>
                   </div>
@@ -264,6 +287,7 @@ export default function Home() {
                     bindingResidues
                   }
                   showLigand
+                  ligandId={results.target_analysis?.ligand_id || TARGET_LIGANDS[selectedTarget] || "UNK"}
                   selectedCompound={selectedCompound}
                   toxicityMap={toxicityMap}
                   onClearSelection={() => setSelectedCompound(null)}
@@ -281,6 +305,8 @@ export default function Home() {
                 rankings={results.binding_rankings.rankings}
                 toxicityProfiles={results.toxicity_profiles}
                 selectedCompoundId={selectedCompound?.compound_id}
+                referenceDrugName={results.binding_rankings.reference_drug_name}
+                referenceDrugId={results.binding_rankings.reference_drug_id}
                 onSelectCompound={(c) => {
                   setSelectedCompound(c);
                   if (c) {

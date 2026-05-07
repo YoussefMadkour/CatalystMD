@@ -24,6 +24,9 @@ RCSB_BASE_URL = "https://files.rcsb.org/download"
 KNOWN_TARGETS = {
     "6LU7": {
         "name": "SARS-CoV-2 Main Protease",
+        "ligand_id": "N3",
+        "reference_drug_id": "nirmatrelvir",
+        "reference_drug_name": "Nirmatrelvir (Paxlovid)",
         "binding_site_residues": ["His41", "Cys145", "Glu166", "His164"],
         "binding_site_center": [-15.2, 12.8, 70.1],
         "pocket_volume_A3": 892.4,
@@ -41,6 +44,9 @@ KNOWN_TARGETS = {
     },
     "1HIV": {
         "name": "HIV-1 Protease",
+        "ligand_id": "A77",
+        "reference_drug_id": "saquinavir",
+        "reference_drug_name": "Saquinavir",
         "binding_site_residues": ["Asp25", "Thr26", "Gly27", "Asp25'"],
         "binding_site_center": [3.0, 0.0, 0.0],
         "pocket_volume_A3": 650.0,
@@ -50,6 +56,9 @@ KNOWN_TARGETS = {
     },
     "6OIM": {
         "name": "KRAS G12C (Lung Cancer)",
+        "ligand_id": "ARS",
+        "reference_drug_id": "sotorasib",
+        "reference_drug_name": "Sotorasib (Lumakras)",
         "binding_site_residues": ["Cys12", "His95", "Tyr96", "Asp69"],
         "binding_site_center": [-2.5, -1.8, 12.3],
         "pocket_volume_A3": 530.0,
@@ -68,6 +77,9 @@ KNOWN_TARGETS = {
     },
     "1M17": {
         "name": "EGFR Kinase (Lung Cancer)",
+        "ligand_id": "AQ4",
+        "reference_drug_id": "erlotinib",
+        "reference_drug_name": "Erlotinib (Tarceva)",
         "binding_site_residues": ["Met793", "Thr790", "Lys745", "Asp855"],
         "binding_site_center": [22.5, 0.5, 52.0],
         "pocket_volume_A3": 780.0,

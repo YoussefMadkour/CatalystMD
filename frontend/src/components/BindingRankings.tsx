@@ -8,6 +8,8 @@ interface BindingRankingsProps {
   toxicityProfiles?: ToxicityProfile[];
   selectedCompoundId?: string | null;
   onSelectCompound?: (compound: RankingEntry | null) => void;
+  referenceDrugName?: string;
+  referenceDrugId?: string;
 }
 
 export default function BindingRankings({
@@ -15,6 +17,8 @@ export default function BindingRankings({
   toxicityProfiles,
   selectedCompoundId,
   onSelectCompound,
+  referenceDrugName = "Paxlovid",
+  referenceDrugId = "nirmatrelvir",
 }: BindingRankingsProps) {
   const toxMap = new Map(
     (toxicityProfiles ?? []).map((t) => [t.compound_id, t])
@@ -43,7 +47,7 @@ export default function BindingRankings({
               <th className="pb-3 text-left text-[11px] font-medium uppercase tracking-wider text-slate-500">#</th>
               <th className="pb-3 text-left text-[11px] font-medium uppercase tracking-wider text-slate-500">Compound</th>
               <th className="pb-3 text-right text-[11px] font-medium uppercase tracking-wider text-slate-500">Binding Score</th>
-              <th className="pb-3 text-center text-[11px] font-medium uppercase tracking-wider text-slate-500">vs Paxlovid</th>
+              <th className="pb-3 text-center text-[11px] font-medium uppercase tracking-wider text-slate-500">vs {referenceDrugName}</th>
               <th className="pb-3 text-center text-[11px] font-medium uppercase tracking-wider text-slate-500">Lipinski</th>
             </tr>
           </thead>
@@ -51,7 +55,7 @@ export default function BindingRankings({
             {rankings.map((r) => {
               const tox = toxMap.get(r.compound_id);
               const isTop = r.rank === 1;
-              const isRef = r.compound_id === "nirmatrelvir";
+              const isRef = r.compound_id === referenceDrugId;
               const isSelected = selectedCompoundId === r.compound_id;
 
               return (
@@ -111,14 +115,14 @@ export default function BindingRankings({
                   </td>
                   <td className="py-2.5 text-center">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                      r.vs_nirmatrelvir === "stronger"
+                      (r.vs_reference ?? r.vs_nirmatrelvir) === "stronger"
                         ? "bg-emerald-500/10 text-emerald-400"
-                        : r.vs_nirmatrelvir === "similar"
+                        : (r.vs_reference ?? r.vs_nirmatrelvir) === "similar"
                           ? "bg-slate-500/10 text-slate-400"
                           : "bg-orange-500/10 text-orange-400"
                     }`}>
-                      {r.vs_nirmatrelvir === "stronger" ? "↑ Stronger" :
-                       r.vs_nirmatrelvir === "similar" ? "≈ Similar" : "↓ Weaker"}
+                      {(r.vs_reference ?? r.vs_nirmatrelvir) === "stronger" ? "↑ Stronger" :
+                       (r.vs_reference ?? r.vs_nirmatrelvir) === "similar" ? "≈ Similar" : "↓ Weaker"}
                     </span>
                   </td>
                   <td className="py-2.5 text-center">
@@ -142,10 +146,10 @@ export default function BindingRankings({
                           <div className="text-[9px] text-slate-400">Binding Score (kcal/mol)</div>
                         </div>
                         <div className="rounded-lg bg-white p-2.5 text-center shadow-sm">
-                          <div className={`text-sm font-bold ${r.vs_nirmatrelvir === "stronger" ? "text-emerald-600" : r.vs_nirmatrelvir === "similar" ? "text-slate-600" : "text-orange-500"}`}>
-                            {r.delta_vs_nirmatrelvir > 0 ? "+" : ""}{r.delta_vs_nirmatrelvir.toFixed(2)}
+                          <div className={`text-sm font-bold ${(r.vs_reference ?? r.vs_nirmatrelvir) === "stronger" ? "text-emerald-600" : (r.vs_reference ?? r.vs_nirmatrelvir) === "similar" ? "text-slate-600" : "text-orange-500"}`}>
+                            {(r.delta_vs_reference ?? r.delta_vs_nirmatrelvir ?? 0) > 0 ? "+" : ""}{(r.delta_vs_reference ?? r.delta_vs_nirmatrelvir ?? 0).toFixed(2)}
                           </div>
-                          <div className="text-[9px] text-slate-400">vs Paxlovid (kcal/mol)</div>
+                          <div className="text-[9px] text-slate-400">vs {referenceDrugName} (kcal/mol)</div>
                         </div>
                         {tox && (
                           <>

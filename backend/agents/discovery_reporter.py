@@ -42,8 +42,8 @@ def _build_template_brief(state: dict) -> str:
         f"{'-'*60}",
         f"Compound: {top['compound_name']}",
         f"Binding affinity: {top['binding_score_kcal_mol']} kcal/mol",
-        f"vs. Nirmatrelvir (Paxlovid): {top['vs_nirmatrelvir'].upper()} binding",
-        f"  Delta: {top['delta_vs_nirmatrelvir']:+.2f} kcal/mol",
+        f"vs. {rankings.get('reference_drug_name', 'reference drug')}: {top['vs_reference'].upper()} binding",
+        f"  Delta: {top['delta_vs_reference']:+.2f} kcal/mol",
         f"Drug-likeness (Lipinski): {lipinski_status}",
         f"Toxicity flags: {tox_flags}",
         "",
@@ -60,7 +60,7 @@ def _build_template_brief(state: dict) -> str:
         lines.append(
             f"  {r['rank']:2d}. {r['compound_name']:<35s} "
             f"{r['binding_score_kcal_mol']:>7.2f} kcal/mol  "
-            f"({r['vs_nirmatrelvir']}){marker}"
+            f"({r['vs_reference']}){marker}"
         )
 
     lines.extend([
@@ -99,7 +99,7 @@ def _build_template_brief(state: dict) -> str:
     return "\n".join(lines)
 
 
-def run_discovery_reporter(state: dict) -> dict:
+def run_discovery_reporter(state: dict, progress_cb=None) -> dict:
     start = time.perf_counter()
     target = state["target_analysis"]
     rankings = state["binding_rankings"]
@@ -112,16 +112,20 @@ def run_discovery_reporter(state: dict) -> dict:
         f"Target: {target['protein_name']} ({target['pdb_id']})\n"
         f"Compounds screened: {total} on AMD MI300X\n"
         f"Top hit: {top['compound_name']} at {top['binding_score_kcal_mol']} kcal/mol\n"
-        f"vs Nirmatrelvir: {top['vs_nirmatrelvir']} ({top['delta_vs_nirmatrelvir']:+.2f} kcal/mol)\n\n"
+        f"vs {rankings.get('reference_drug_name', 'reference drug')}: {top['vs_reference']} ({top['delta_vs_reference']:+.2f} kcal/mol)\n\n"
         f"Write a 2-paragraph structural analysis explaining why the top candidate "
         f"shows stronger binding, referencing the binding site residues "
         f"({', '.join(target['binding_site']['key_residues'])}). "
         f"Keep it accessible to a pharmaceutical scientist."
     )
 
+    if progress_cb:
+        progress_cb("generate_brief", "running", step="Qwen generating structural analysis...")
     llm_trace = call_llm(prompt, max_tokens=1024, temperature=0.4)
     structural_analysis = llm_trace["response"]
 
+    if progress_cb:
+        progress_cb("generate_brief", "running", step="Compiling discovery brief...")
     brief = _build_template_brief(state)
 
     if structural_analysis:

@@ -24,9 +24,8 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
             <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">The AMD Story</div>
             <p className="text-xs leading-relaxed text-slate-400">
               A full explicit-solvent simulation of COVID-19 protease requires
-              <span className="font-bold text-blue-600"> ~140GB GPU memory</span>.
-              NVIDIA H100 has 80GB. AMD MI300X has 192GB.
-              This simulation doesn&apos;t run on competitive hardware.
+              <span className="font-bold text-blue-600"> up to 140GB GPU memory</span> at production scale.
+              AMD MI300X has 192GB HBM3, making it one of the few single GPUs that can handle this.
             </p>
           </div>
         </div>
@@ -44,11 +43,11 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
             },
             {
               icon: "⚛️", name: "Molecular Dynamics",
-              desc: "Simulates how each drug molecule physically interacts with the protein using Newton's laws of motion. Runs on AMD MI300X — requires 140GB GPU memory that only MI300X can provide.",
+              desc: "Simulates how each drug molecule physically interacts with the protein using Newton's laws of motion. Runs on AMD MI300X via OpenMM with AMBER14 force field.",
             },
             {
               icon: "📊", name: "Binding Scorer",
-              desc: "Ranks all candidates by how strongly they bind. Compares each one to Nirmatrelvir (Paxlovid) — the FDA-approved COVID drug — to find potentially better alternatives.",
+              desc: "Ranks all candidates by how strongly they bind. Compares each one to the current FDA-approved drug for that target to find potentially better alternatives.",
             },
             {
               icon: "🛡️", name: "Toxicity Screener",
@@ -81,7 +80,7 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
               <span className="text-xs font-semibold text-slate-900">COVID-19 Protease</span>
               <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-600">Recommended first</span>
             </div>
-            <p className="mt-1 text-[10px] text-slate-400">20 compounds vs Paxlovid. GC-376 should rank as top hit with stronger binding.</p>
+            <p className="mt-1 text-[10px] text-slate-400">20 compounds vs Nirmatrelvir (Paxlovid). Recommended first target.</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3">
             <div className="flex items-center gap-2">
