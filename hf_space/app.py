@@ -1,209 +1,178 @@
+"""
+CatalystMD - AI Drug Discovery on AMD MI300X
+HuggingFace Space demo using precomputed results from the full pipeline.
+
+All results were computed on AMD Instinct MI300X using:
+- AutoDock Vina for molecular docking (real physics-based binding scores)
+- OpenMM with AMBER14 force field for energy minimization (OpenCL on MI300X)
+- Qwen 2.5-7B (HuggingFace Hub) via vLLM for AI analysis
+- RDKit for toxicity screening (Lipinski + PAINS)
+"""
+
 import gradio as gr
-import requests
 import json
-import time
-import hashlib
+from pathlib import Path
 
-DEMO_COMPOUNDS = [
-    {"id": "N3", "name": "N3 (crystal structure ligand)", "smiles": "CC(=O)OCC(=O)[C@@H]1CCCN1C(=O)[C@@H](NC(=O)[C@H](CC2CCCCC2)NC(=O)[C@@H](NC(=O)c3cnccn3)C(C)(C)C)CC4CC4", "known_ki_nm": 34.0},
-    {"id": "GC376", "name": "GC-376", "smiles": "O=C(Cn1ccnc1)N[C@@H](CC(=O)OCc1ccccc1)C(=O)N2CCC[C@H]2C(=O)CBr", "known_ki_nm": 3.0},
-    {"id": "nirmatrelvir", "name": "Nirmatrelvir (Paxlovid)", "smiles": "CC1(C)C[C@@H]1NC(=O)[C@H](F)C(=O)N[C@@H](C#N)C[C@H]1CCNC1=O", "known_ki_nm": 3.11},
-    {"id": "boceprevir", "name": "Boceprevir", "smiles": "CC(C)(C)NC(=O)...", "known_ki_nm": 4200.0},
-    {"id": "ebselen", "name": "Ebselen", "smiles": "O=C1c2ccccc2-n2c1[Se]c1ccccc12", "known_ki_nm": 670.0},
-    {"id": "carmofur", "name": "Carmofur", "smiles": "CCCCCCNC(=O)N1C=CC(=O)NC1=O", "known_ki_nm": 1350.0},
-    {"id": "MG132", "name": "MG-132", "smiles": "CC(C)C[C@@H](NC(=O)...)C=O", "known_ki_nm": 42.0},
-    {"id": "calpainInhII", "name": "Calpain Inhibitor II", "smiles": "CC(C)C[C@@H](NC(=O)c1ccccn1)C(=O)N[C@@H](CC(C)C)C=O", "known_ki_nm": 97.0},
-    {"id": "leupeptin", "name": "Leupeptin", "smiles": "CC(C)C[C@@H](NC(=O)...)C=O", "known_ki_nm": 180.0},
-    {"id": "shikonin", "name": "Shikonin", "smiles": "CC(C)=CC[C@H](O)C1=CC(=O)c2c(O)ccc(O)c2C1=O", "known_ki_nm": 1290.0},
-    {"id": "tideglusib", "name": "Tideglusib", "smiles": "O=C1N(Cc2ccccc2)C(=O)/C1=C/c1cccs1", "known_ki_nm": 1500.0},
-    {"id": "disulfiram", "name": "Disulfiram", "smiles": "CCN(CC)C(=S)SSC(=S)N(CC)CC", "known_ki_nm": 9350.0},
-    {"id": "PX12", "name": "PX-12", "smiles": "CCCCCCSSCC", "known_ki_nm": 21400.0},
-    {"id": "TDZD8", "name": "TDZD-8", "smiles": "O=C1N(Cc2ccccc2)...", "known_ki_nm": 2100.0},
-    {"id": "cinanserin", "name": "Cinanserin", "smiles": "CN(C)CCSC(=O)/C=C/c1ccccc1", "known_ki_nm": 12500.0},
-    {"id": "oxytetracycline", "name": "Oxytetracycline", "smiles": "...", "known_ki_nm": 24500.0},
-    {"id": "bazedoxifene", "name": "Bazedoxifene", "smiles": "Oc1ccc(...)", "known_ki_nm": 8900.0},
-    {"id": "chloroquine", "name": "Chloroquine", "smiles": "CCN(CC)CCCC(C)Nc1ccnc2cc(Cl)ccc12", "known_ki_nm": 28900.0},
-    {"id": "luteolin", "name": "Luteolin", "smiles": "OC1=CC(=C2OC(...)=CC2=O)C=C(O)C1", "known_ki_nm": 5200.0},
-    {"id": "baicalein", "name": "Baicalein", "smiles": "O=c1cc(-c2ccccc2)oc2cc(O)c(O)c(O)c12", "known_ki_nm": 940.0},
-]
+DATA_DIR = Path(__file__).parent / "data"
 
-RCSB_URL = "https://files.rcsb.org/download"
-
-BINDING_SITE = {
-    "6LU7": {"name": "SARS-CoV-2 Main Protease", "residues": "His41, Cys145, Glu166, His164", "resolution": "2.16 A"},
-    "1HIV": {"name": "HIV-1 Protease", "residues": "Asp25, Thr26, Gly27", "resolution": "2.0 A"},
+TARGETS = {
+    "6LU7": {
+        "name": "SARS-CoV-2 Main Protease (COVID-19)",
+        "pdb_id": "6LU7",
+        "reference_drug": "Nirmatrelvir (Paxlovid)",
+        "description": "The main protease that COVID-19 needs to replicate. Paxlovid targets this protein.",
+        "residues": "His41, Cys145, Glu166, His164",
+        "compounds": 20,
+    },
+    "6OIM": {
+        "name": "KRAS G12C (Lung Cancer)",
+        "pdb_id": "6OIM",
+        "reference_drug": "Sotorasib (Lumakras)",
+        "description": "The most frequently mutated oncogene in human cancer. Was 'undruggable' for 40 years until 2021.",
+        "residues": "Cys12, His95, Tyr96, Asp69",
+        "compounds": 15,
+    },
+    "1M17": {
+        "name": "EGFR Kinase (Lung Cancer)",
+        "pdb_id": "1M17",
+        "reference_drug": "Erlotinib (Tarceva)",
+        "description": "Receptor tyrosine kinase found in 15-30% of non-small cell lung cancers. $8B/yr drug market.",
+        "residues": "Met793, Thr790, Lys745, Asp855",
+        "compounds": 12,
+    },
+    "1HIV": {
+        "name": "HIV-1 Protease",
+        "pdb_id": "1HIV",
+        "reference_drug": "Saquinavir",
+        "description": "HIV-1 protease cleaves viral polyproteins during maturation. Target of all protease inhibitor antiretrovirals.",
+        "residues": "Asp25, Thr26, Gly27, Asp25'",
+        "compounds": 10,
+    },
 }
 
 
-def score_compound(compound, pdb_id):
-    seed = hashlib.sha256(f"{pdb_id}:{compound['id']}".encode()).digest()
-    seed_val = int.from_bytes(seed[:4], "big") / (2**32)
-    ki = compound["known_ki_nm"]
-    if ki <= 5:
-        return round(-9.0 + seed_val * 0.8, 2)
-    elif ki <= 50:
-        return round(-8.2 + seed_val * 0.6, 2)
-    elif ki <= 200:
-        return round(-7.5 + seed_val * 0.5, 2)
-    elif ki <= 1000:
-        return round(-6.8 + seed_val * 0.6, 2)
-    elif ki <= 5000:
-        return round(-5.8 + seed_val * 0.8, 2)
-    else:
-        return round(-4.5 + seed_val * 1.0, 2)
+def load_results(pdb_id):
+    """Load precomputed results for a target."""
+    results_file = DATA_DIR / f"{pdb_id}_results.json"
+    if results_file.exists():
+        return json.loads(results_file.read_text())
+    return None
 
 
-def run_pipeline(pdb_id, progress=gr.Progress()):
-    target = BINDING_SITE.get(pdb_id, BINDING_SITE["6LU7"])
+def get_3d_viewer(pdb_id):
+    return f'<iframe src="https://3Dmol.csb.pitt.edu/viewer.html?pdb={pdb_id}&style=cartoon:color~spectrum" width="100%" height="450" style="border:none;border-radius:12px;"></iframe>'
 
-    progress(0.1, desc="Identifying drug target...")
-    target_info = f"**{target['name']}** (PDB: {pdb_id})\n\nResolution: {target['resolution']}\nBinding site: {target['residues']}"
 
-    progress(0.2, desc="Running molecular dynamics on AMD MI300X...")
-    results = []
-    for i, compound in enumerate(DEMO_COMPOUNDS):
-        score = score_compound(compound, pdb_id)
-        results.append({
-            "compound": compound["name"],
-            "score": score,
-            "known_ki_nm": compound["known_ki_nm"],
-        })
-        progress(0.2 + 0.5 * (i + 1) / len(DEMO_COMPOUNDS), desc=f"Simulating compound {i+1}/20...")
+def run_demo(pdb_id, progress=gr.Progress()):
+    target = TARGETS[pdb_id]
+    results = load_results(pdb_id)
 
-    results.sort(key=lambda r: r["score"])
+    progress(0.1, desc="Loading target analysis...")
 
-    nirm_score = next((r["score"] for r in results if "Nirmatrelvir" in r["compound"]), -8.3)
+    # Target info
+    target_md = f"""### {target['name']}
+**PDB:** {pdb_id} | **Reference drug:** {target['reference_drug']}
+**Binding site:** {target['residues']}
 
-    progress(0.75, desc="Scoring binding affinity...")
-
-    rankings_md = "| Rank | Compound | Score (kcal/mol) | vs Paxlovid |\n|------|----------|-----------------|-------------|\n"
-    for i, r in enumerate(results):
-        delta = r["score"] - nirm_score
-        vs = "STRONGER" if delta < -0.2 else ("SIMILAR" if abs(delta) <= 0.2 else "weaker")
-        marker = " **TOP HIT**" if i == 0 else ""
-        rankings_md += f"| {i+1} | {r['compound']}{marker} | {r['score']:.2f} | {vs} |\n"
-
-    progress(0.85, desc="Screening for toxicity...")
-
-    progress(0.95, desc="Generating discovery brief...")
-
-    top = results[0]
-    benchmark_md = f"""## AMD MI300X Performance
-
-| Metric | Value |
-|--------|-------|
-| System size | 85,284 atoms |
-| Memory required | ~140 GB |
-| AMD MI300X (192GB HBM3) | 20 compounds in {len(DEMO_COMPOUNDS) * 2.7:.1f}s |
-| NVIDIA H100 (80GB) | **NOT FEASIBLE** - exceeds memory |
-
-**AMD MI300X unique advantage:** Single-GPU simulation of 85K+ atom systems.
-Only possible on 192GB HBM3 hardware.
+{target['description']}
 """
 
-    brief = f"""# DrugForge Discovery Brief
+    if not results:
+        progress(1.0)
+        return (
+            target_md,
+            "Precomputed results not available for this target. Run the full pipeline on AMD MI300X to generate results.",
+            "",
+            "",
+        )
 
-**Target:** {target['name']} ({pdb_id})
-**Compounds screened:** {len(DEMO_COMPOUNDS)}
-**Platform:** AMD Instinct MI300X - 192GB HBM3
+    progress(0.3, desc="Loading binding rankings...")
 
----
+    # Rankings table
+    rankings = results.get("binding_rankings", {}).get("rankings", [])
+    ref_name = results.get("binding_rankings", {}).get("reference_drug_name", target["reference_drug"])
 
-## Top Candidate: {top['compound']}
+    rankings_md = f"| Rank | Compound | Score (kcal/mol) | vs {ref_name} | Lipinski |\n|------|----------|-----------------|-------------|----------|\n"
+    for r in rankings:
+        vs = r.get("vs_reference", "similar")
+        vs_display = "STRONGER" if vs == "stronger" else ("Similar" if vs == "similar" else "Weaker")
+        rankings_md += f"| {r['rank']} | {r['compound_name']} | {r['binding_score_kcal_mol']:.2f} | {vs_display} | - |\n"
 
-- **Binding affinity:** {top['score']:.2f} kcal/mol
-- **vs Nirmatrelvir (Paxlovid):** {'STRONGER' if top['score'] < nirm_score - 0.2 else 'SIMILAR'} binding
-- **Delta:** {top['score'] - nirm_score:+.2f} kcal/mol
+    progress(0.6, desc="Loading toxicity screening...")
 
----
+    # Toxicity summary
+    tox_profiles = results.get("toxicity_profiles", [])
+    tox_md = "### Toxicity Screening (Lipinski + PAINS)\n\n"
+    if tox_profiles:
+        tox_md += "| Compound | MW | LogP | Violations | Status |\n|----------|-----|------|------------|--------|\n"
+        for t in tox_profiles:
+            lip = t.get("lipinski", {})
+            status = "PASS" if t.get("overall_pass") else "REVIEW"
+            tox_md += f"| {t['compound_name']} | {lip.get('molecular_weight', '-')} | {lip.get('logP', '-')} | {lip.get('lipinski_violations', '-')}/4 | {status} |\n"
 
-## Recommended Next Steps
+    progress(0.8, desc="Loading discovery brief...")
 
-1. Experimental validation: biochemical IC50 assay
-2. Cellular antiviral assay: plaque reduction
-3. Full MM-PBSA binding free energy calculation
-4. In silico ADMET optimization
-
----
-
-*Generated by DrugForge - AI Drug Discovery on AMD MI300X*
-"""
+    # Brief
+    brief = results.get("discovery_brief", "No brief available.")
 
     progress(1.0, desc="Complete!")
-
-    return target_info, rankings_md, benchmark_md, brief
-
-
-def fetch_pdb_viewer(pdb_id):
-    try:
-        resp = requests.get(f"{RCSB_URL}/{pdb_id}.pdb", timeout=15)
-        resp.raise_for_status()
-        return f'<iframe src="https://3Dmol.csb.pitt.edu/viewer.html?pdb={pdb_id}&style=cartoon:color~spectrum" width="100%" height="400" style="border:none;border-radius:8px;"></iframe>'
-    except Exception:
-        return f"<p>Could not load 3D structure for {pdb_id}</p>"
+    return target_md, rankings_md, tox_md, f"```\n{brief}\n```"
 
 
 with gr.Blocks(
-    title="DrugForge - AI Drug Discovery on AMD MI300X",
-    theme=gr.themes.Base(
-        primary_hue="cyan",
-        secondary_hue="blue",
+    title="CatalystMD - AI Drug Discovery on AMD MI300X",
+    theme=gr.themes.Soft(
+        primary_hue="blue",
         neutral_hue="slate",
-        font=gr.themes.GoogleFont("Inter"),
     ),
-    css="""
-    .gradio-container { max-width: 1200px !important; }
-    .dark { background: #0f172a !important; }
-    """,
 ) as demo:
     gr.Markdown("""
-# DrugForge
-### AI Drug Discovery on AMD MI300X
+# CatalystMD
+### AI-Powered Drug Discovery on AMD MI300X
 
-Five AI agents simulate drug-protein binding using molecular dynamics on AMD MI300X,
-score binding affinity, screen for toxicity, and generate a complete discovery brief.
+5 AI agents run a complete drug discovery pipeline: molecular docking (AutoDock Vina),
+physics simulation (OpenMM on AMD MI300X), binding scoring, toxicity screening (RDKit),
+and AI-generated analysis (Qwen 2.5-7B via vLLM).
 
-**The 85,284-atom simulation requires 140GB GPU memory - only possible on AMD MI300X's 192GB HBM3.**
+**Built for the AMD Developer Hackathon 2026** | [GitHub](https://github.com/YoussefMadkour/CatalystMD)
     """)
 
     with gr.Row():
         with gr.Column(scale=3):
-            viewer_html = gr.HTML(
-                value=fetch_pdb_viewer("6LU7"),
-                label="3D Protein Structure",
-            )
+            viewer = gr.HTML(value=get_3d_viewer("6LU7"), label="3D Protein Structure")
         with gr.Column(scale=2):
-            pdb_dropdown = gr.Dropdown(
-                choices=["6LU7", "1HIV"],
+            pdb_select = gr.Dropdown(
+                choices=[(TARGETS[k]["name"], k) for k in TARGETS],
                 value="6LU7",
-                label="Target Protein",
+                label="Disease Target",
             )
-            target_info = gr.Markdown(label="Target Info")
-            run_btn = gr.Button(
-                "Run Discovery Pipeline on AMD MI300X",
-                variant="primary",
-                size="lg",
-            )
+            target_info = gr.Markdown()
+            run_btn = gr.Button("View Pipeline Results", variant="primary", size="lg")
 
-    pdb_dropdown.change(
-        fn=lambda pdb_id: fetch_pdb_viewer(pdb_id),
-        inputs=pdb_dropdown,
-        outputs=viewer_html,
-    )
+            gr.Markdown("""
+**How it works:**
+1. Target Analyst identifies the protein and binding pocket
+2. Molecular Dynamics docks each compound (AutoDock Vina + OpenMM on MI300X)
+3. Binding Scorer ranks candidates vs FDA-approved drug
+4. Toxicity Screener checks drug-likeness (Lipinski + PAINS)
+5. Discovery Reporter generates a scientific brief (Qwen 2.5-7B)
+            """)
 
-    with gr.Row():
-        rankings_output = gr.Markdown(label="Binding Rankings")
+    pdb_select.change(fn=get_3d_viewer, inputs=pdb_select, outputs=viewer)
 
-    with gr.Row():
-        with gr.Column():
-            benchmark_output = gr.Markdown(label="AMD Benchmark")
-        with gr.Column():
-            brief_output = gr.Markdown(label="Discovery Brief")
+    with gr.Tab("Binding Rankings"):
+        rankings_out = gr.Markdown()
+
+    with gr.Tab("Toxicity"):
+        tox_out = gr.Markdown()
+
+    with gr.Tab("Discovery Brief"):
+        brief_out = gr.Markdown()
 
     run_btn.click(
-        fn=run_pipeline,
-        inputs=pdb_dropdown,
-        outputs=[target_info, rankings_output, benchmark_output, brief_output],
+        fn=run_demo,
+        inputs=pdb_select,
+        outputs=[target_info, rankings_out, tox_out, brief_out],
     )
 
 if __name__ == "__main__":
