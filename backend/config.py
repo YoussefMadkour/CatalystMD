@@ -19,6 +19,15 @@ SIMULATION_STEPS = int(os.getenv("SIMULATION_STEPS", "50000"))
 FAST_SCORING_STEPS = int(os.getenv("FAST_SCORING_STEPS", "1000"))
 SOLVENT_PADDING_NM = float(os.getenv("SOLVENT_PADDING_NM", "1.0"))
 
+# Scoring configuration
+SCORING_METHOD = os.getenv("SCORING_METHOD", "vina")  # "vina" | "mmgbsa" | "protein_only"
+SCORING_VERSION = "vina_v1"
+
+# MM-GBSA parameters (Phase 2)
+MMGBSA_MD_STEPS = int(os.getenv("MMGBSA_MD_STEPS", "5000"))
+MMGBSA_SNAPSHOTS = int(os.getenv("MMGBSA_SNAPSHOTS", "10"))
+MMGBSA_SNAPSHOT_INTERVAL = int(os.getenv("MMGBSA_SNAPSHOT_INTERVAL", "500"))
+
 RCSB_BASE_URL = "https://files.rcsb.org/download"
 
 KNOWN_TARGETS = {

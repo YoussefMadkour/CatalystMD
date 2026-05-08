@@ -71,9 +71,6 @@ export interface Benchmark {
   platform: string;
   total_compounds: number;
   method: string;
-  memory_required_gb: number;
-  prod_memory_required_gb: number;
-  prod_atom_count: number;
 }
 
 export interface LLMCall {

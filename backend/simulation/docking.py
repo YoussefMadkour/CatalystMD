@@ -8,6 +8,43 @@ from backend.config import DATA_DIR
 DOCKED_DIR = DATA_DIR / "docked"
 DOCKED_DIR.mkdir(parents=True, exist_ok=True)
 
+_receptor_pdbqt_cache: dict[str, str] = {}
+
+
+def _prepare_receptor_pdbqt(pdb_path: str) -> str:
+    """Clean PDB with PDBFixer, convert to PDBQT with Open Babel. Cached per protein."""
+    if pdb_path in _receptor_pdbqt_cache:
+        return _receptor_pdbqt_cache[pdb_path]
+
+    import subprocess
+    import tempfile
+    import io
+    from pdbfixer import PDBFixer
+    import openmm.app as app
+
+    # Clean with PDBFixer
+    fixer = PDBFixer(filename=pdb_path)
+    fixer.removeHeterogens(False)
+    fixer.missingResidues = {}
+    fixer.findMissingAtoms()
+    fixer.addMissingAtoms()
+    fixer.addMissingHydrogens(pH=7.0)
+
+    # Write cleaned PDB
+    clean_pdb = tempfile.NamedTemporaryFile(suffix=".pdb", delete=False, mode="w")
+    app.PDBFile.writeFile(fixer.topology, fixer.positions, clean_pdb)
+    clean_pdb.close()
+
+    # Convert to PDBQT with Open Babel
+    pdbqt_path = clean_pdb.name.replace(".pdb", ".pdbqt")
+    subprocess.run(
+        ["obabel", clean_pdb.name, "-O", pdbqt_path, "-xr", "-xp"],
+        capture_output=True, check=True,
+    )
+
+    _receptor_pdbqt_cache[pdb_path] = pdbqt_path
+    return pdbqt_path
+
 
 def dock_compound(
     protein_pdb_path: str,
@@ -68,7 +105,9 @@ def _run_vina(
     if not is_ok:
         raise ValueError(f"PDBQT prep failed: {error_msg}")
 
-    # 2. Write temp files
+    # 2. Get cleaned receptor PDBQT (PDBFixer + Open Babel, cached)
+    receptor_pdbqt = _prepare_receptor_pdbqt(protein_pdb_path)
+
     with tempfile.TemporaryDirectory() as tmpdir:
         ligand_pdbqt = os.path.join(tmpdir, "ligand.pdbqt")
         with open(ligand_pdbqt, "w") as f:
@@ -76,7 +115,7 @@ def _run_vina(
 
         # 3. Run Vina
         v = Vina(sf_name="vina")
-        v.set_receptor(protein_pdb_path)
+        v.set_receptor(receptor_pdbqt)
         v.set_ligand_from_file(ligand_pdbqt)
         v.compute_vina_maps(center=center, box_size=box_size)
 

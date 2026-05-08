@@ -16,3 +16,10 @@ frontend/.next/
 frontend/node_modules/
 
 .DS_Store
+
+# Private docs
+docs/commercialization_plan.md
+docs/market_research.md
+
+# Validation output
+data/validation/

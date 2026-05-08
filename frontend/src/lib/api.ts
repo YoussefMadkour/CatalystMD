@@ -29,7 +29,7 @@ export function pollStatus(
   onAgentUpdate: (agent: string, status: string) => void,
   onComplete: () => void,
   onError: (err: string) => void,
-  onCompoundProgress?: (current: number, total: number, name: string) => void,
+  onCompoundProgress?: (current: number, total: number, name: string, atoms?: number) => void,
   onStepUpdate?: (step: string) => void
 ): () => void {
   let cancelled = false;
@@ -62,7 +62,7 @@ export function pollStatus(
 
         // Update compound progress
         if (data.compound_progress && onCompoundProgress) {
-          onCompoundProgress(data.compound_progress.current, data.compound_progress.total, data.compound_progress.name);
+          onCompoundProgress(data.compound_progress.current, data.compound_progress.total, data.compound_progress.name, data.atom_count);
         }
 
         // Update current step
@@ -88,6 +88,29 @@ export async function fetchCompounds(pdbId: string = "6LU7") {
   const res = await fetch(`${API_BASE}/api/compounds?pdb_id=${pdbId}`);
   const data = await res.json();
   return data.compounds;
+}
+
+export async function fetchExplicitBenchmark(): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/benchmark/explicit`);
+    const data = await res.json();
+    if (!data.available) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchDockPose(pdbId: string, compoundId: string): Promise<{ pose_pdb: string; vina_score_kcal_mol: number } | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/dock/${pdbId}/${compoundId}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.error || !data.pose_pdb) return null;
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 export async function fetchTargets() {

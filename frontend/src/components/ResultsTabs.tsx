@@ -70,17 +70,20 @@ function OverviewTab({ results }: { results: PipelineResults }) {
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-400">
             <span>PDB: {target.pdb_id}</span>
             <span>{target.resolution_angstroms}&#8491; resolution</span>
-            <span>{target.pdb_atom_count.toLocaleString()} atoms (protein)</span>
+            <span>{results.benchmark?.atom_count ? results.benchmark.atom_count.toLocaleString() : target.pdb_atom_count.toLocaleString()} atoms</span>
           </div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-2 text-[9px] text-slate-400 mb-1">Binding site residues (where drugs attach)</div>
+          <div className="flex flex-wrap gap-1.5">
             {target.binding_site.key_residues.map((res) => {
-              const colorMap: Record<string, { border: string; bg: string; text: string }> = {
-                His41:  { border: "border-amber-300", bg: "bg-amber-50", text: "text-amber-600" },
-                Cys145: { border: "border-red-300", bg: "bg-red-50", text: "text-red-600" },
-                Glu166: { border: "border-violet-300", bg: "bg-violet-50", text: "text-violet-600" },
-                His164: { border: "border-cyan-300", bg: "bg-cyan-50", text: "text-cyan-600" },
-              };
-              const c = colorMap[res] || { border: "border-slate-300", bg: "bg-slate-50", text: "text-slate-600" };
+              // Colors for all target residues (red, amber, violet, cyan pattern)
+              const residueIndex = target.binding_site.key_residues.indexOf(res);
+              const palette = [
+                { border: "border-red-300", bg: "bg-red-50", text: "text-red-600" },
+                { border: "border-amber-300", bg: "bg-amber-50", text: "text-amber-600" },
+                { border: "border-violet-300", bg: "bg-violet-50", text: "text-violet-600" },
+                { border: "border-cyan-300", bg: "bg-cyan-50", text: "text-cyan-600" },
+              ];
+              const c = palette[residueIndex % palette.length];
               return (
                 <span key={res} className={`rounded-md border ${c.border} ${c.bg} px-2 py-0.5 text-[10px] font-medium ${c.text}`}>
                   {res}
@@ -201,11 +204,14 @@ function AnalysisTab({ results }: { results: PipelineResults }) {
 function getReviewReason(tox: PipelineResults["toxicity_profiles"][0]): string {
   const issues: string[] = [];
   const lip = tox.lipinski;
-  if (lip.molecular_weight > 500) issues.push(`Molecular weight (${lip.molecular_weight} Da) exceeds 500 Da limit,larger molecules have difficulty crossing cell membranes`);
-  if (lip.logP > 5) issues.push(`LogP (${lip.logP}) exceeds 5,too hydrophobic for good oral absorption`);
-  if (lip.H_bond_donors > 5) issues.push(`${lip.H_bond_donors} hydrogen bond donors exceeds limit of 5,reduces membrane permeability`);
-  if (lip.H_bond_acceptors > 10) issues.push(`${lip.H_bond_acceptors} hydrogen bond acceptors exceeds limit of 10,reduces oral bioavailability`);
-  if (issues.length === 0) return "Borderline on one or more Lipinski criteria.";
+  if (lip.molecular_weight > 500) issues.push(`Molecular weight (${lip.molecular_weight} Da) exceeds 500 limit: larger molecules have difficulty crossing cell membranes`);
+  if (lip.logP > 5) issues.push(`LogP (${lip.logP}) exceeds 5: too hydrophobic for good oral absorption`);
+  if (lip.H_bond_donors > 5) issues.push(`${lip.H_bond_donors} H-bond donors exceeds 5: reduces membrane permeability`);
+  if (lip.H_bond_acceptors > 10) issues.push(`${lip.H_bond_acceptors} H-bond acceptors exceeds 10: reduces oral bioavailability`);
+  if (tox.pains_flags && tox.pains_flags.length > 0) {
+    issues.push(`PAINS alert (${tox.pains_flags.join(", ")}): chemical pattern known to cause false positives in lab assays`);
+  }
+  if (issues.length === 0) return "Flagged for manual review.";
   return issues.join(". ") + ".";
 }
 

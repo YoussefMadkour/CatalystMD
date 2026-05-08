@@ -13,6 +13,7 @@ import {
   getProteinPDB,
   pollStatus,
   fetchCompounds,
+  fetchDockPose,
 } from "@/lib/api";
 import Header from "@/components/Header";
 import ProteinViewer from "@/components/ProteinViewer";
@@ -47,8 +48,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCompound, setSelectedCompound] = useState<RankingEntry | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const [compoundProgress, setCompoundProgress] = useState<{ current: number; total: number; name: string } | null>(null);
+  const [compoundProgress, setCompoundProgress] = useState<{ current: number; total: number; name: string; atoms?: number } | null>(null);
   const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [dockedPose, setDockedPose] = useState<string | null>(null);
+  const [dockingLoading, setDockingLoading] = useState(false);
   const [compoundCount, setCompoundCount] = useState(20);
 
   useEffect(() => {
@@ -102,8 +105,8 @@ export default function Home() {
           setError(err);
           setAppState("idle");
         },
-        (current, total, name) => {
-          setCompoundProgress({ current, total, name });
+        (current, total, name, atoms) => {
+          setCompoundProgress({ current, total, name, atoms });
         },
         (step) => {
           setCurrentStep(step);
@@ -231,6 +234,7 @@ export default function Home() {
             <div className="lg:col-span-2">
               <AgentStatusPanel
                 agentStatus={agentStatus}
+                atomCount={compoundProgress?.atoms}
                 currentCompound={compoundProgress?.current}
                 totalCompounds={compoundProgress?.total ?? compoundCount}
                 compoundName={compoundProgress?.name}
@@ -290,7 +294,10 @@ export default function Home() {
                   ligandId={results.target_analysis?.ligand_id || TARGET_LIGANDS[selectedTarget] || "UNK"}
                   selectedCompound={selectedCompound}
                   toxicityMap={toxicityMap}
-                  onClearSelection={() => setSelectedCompound(null)}
+                  onClearSelection={() => { setSelectedCompound(null); setDockedPose(null); }}
+                  dockedPose={dockedPose}
+                  dockingLoading={dockingLoading}
+                  referenceDrugName={results.binding_rankings.reference_drug_name}
                 />
               </div>
 
@@ -307,10 +314,19 @@ export default function Home() {
                 selectedCompoundId={selectedCompound?.compound_id}
                 referenceDrugName={results.binding_rankings.reference_drug_name}
                 referenceDrugId={results.binding_rankings.reference_drug_id}
+                dockingLoading={dockingLoading}
+                dockedPose={dockedPose}
                 onSelectCompound={(c) => {
                   setSelectedCompound(c);
+                  setDockedPose(null);
                   if (c) {
-                    document.getElementById("protein-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    setDockingLoading(true);
+                    fetchDockPose(selectedTarget, c.compound_id).then((result) => {
+                      if (result?.pose_pdb) {
+                        setDockedPose(result.pose_pdb);
+                      }
+                      setDockingLoading(false);
+                    });
                   }
                 }}
               />

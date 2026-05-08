@@ -115,9 +115,7 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
         {/* Header */}
         <div className="mb-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-black text-white shadow-lg shadow-blue-500/20">
-              CM
-            </div>
+            <img src="/logo.png" alt="CatalystMD" className="h-10 w-10 rounded-xl shadow-lg shadow-blue-500/20" />
             <div>
               <h2 className="text-lg font-bold text-slate-900">{current.title}</h2>
               <p className="text-xs text-slate-500">{current.subtitle}</p>

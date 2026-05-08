@@ -87,7 +87,14 @@ echo "  Done."
 # ---- Step 3: Install system deps ----
 echo ""
 echo "[3/8] Installing system dependencies..."
-$SSH "apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq python3.12-venv > /dev/null 2>&1" || true
+$SSH "apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq python3.12-venv openbabel > /dev/null 2>&1" || true
+
+# SSH may drop during apt installs (sshd restarts). Wait for it to come back.
+sleep 5
+for i in $(seq 1 15); do
+    if $SSH "echo ok" > /dev/null 2>&1; then break; fi
+    sleep 3
+done
 
 # Install Node.js 20 if not present
 $SSH "command -v node > /dev/null 2>&1 || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1 && apt-get install -y -qq nodejs > /dev/null 2>&1)"
@@ -104,6 +111,7 @@ $SSH "cd ${REMOTE_DIR} && \
     pip install -q \
         fastapi 'uvicorn[standard]' pydantic requests numpy \
         langgraph langchain-core openai rdkit sse-starlette python-dotenv openmm pdbfixer \
+        vina meeko scipy gemmi \
         2>&1 | tail -1"
 echo "  Done."
 
@@ -118,15 +126,15 @@ echo ""
 echo "[6/8] Starting vLLM with ${VLLM_MODEL}..."
 
 # Check if vLLM is already serving the model
-VLLM_RUNNING=$($SSH "docker exec rocm curl -s http://localhost:${VLLM_PORT}/v1/models 2>/dev/null | grep -c '${VLLM_MODEL}'" || echo "0")
+VLLM_RUNNING=$($SSH "docker exec rocm curl -s http://localhost:${VLLM_PORT}/v1/models 2>/dev/null | grep -q '${VLLM_MODEL}' && echo yes || echo no" 2>/dev/null || echo "no")
 
-if [ "$VLLM_RUNNING" -gt 0 ]; then
+if [ "$VLLM_RUNNING" = "yes" ]; then
     echo "  vLLM already running."
 else
     $SSH "docker exec -d rocm bash -c 'vllm serve ${VLLM_MODEL} --host 0.0.0.0 --port ${VLLM_PORT} --trust-remote-code > /tmp/vllm.log 2>&1'"
     echo "  Waiting for model to download and load (up to 3 min)..."
     for i in $(seq 1 90); do
-        if $SSH "docker exec rocm curl -s http://localhost:${VLLM_PORT}/v1/models 2>/dev/null | grep -q '${VLLM_MODEL}'"; then
+        if $SSH "docker exec rocm curl -s http://localhost:${VLLM_PORT}/v1/models 2>/dev/null | grep -q '${VLLM_MODEL}'" 2>/dev/null; then
             echo "  vLLM ready."
             break
         fi

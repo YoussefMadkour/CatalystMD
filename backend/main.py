@@ -94,6 +94,8 @@ async def start_run(req: RunRequest):
                     "total": kwargs.get("total", 0),
                     "name": kwargs.get("name", ""),
                 }
+                if kwargs.get("atoms"):
+                    jobs[job_id]["atom_count"] = kwargs["atoms"]
             if "step" in kwargs:
                 event["step"] = kwargs["step"]
                 jobs[job_id]["current_step"] = kwargs["step"]
@@ -153,6 +155,8 @@ async def get_results(job_id: str):
             resp["compound_progress"] = job["compound_progress"]
         if "current_step" in job:
             resp["current_step"] = job["current_step"]
+        if "atom_count" in job:
+            resp["atom_count"] = job["atom_count"]
         return resp
     if job["status"] == "failed":
         raise HTTPException(status_code=500, detail=job.get("error", "Pipeline failed"))
@@ -171,9 +175,6 @@ async def get_results(job_id: str):
             "platform": result.get("platform_used", "unknown"),
             "total_compounds": len(result.get("simulation_results", [])),
             "method": result.get("simulation_results", [{}])[0].get("method", "unknown") if result.get("simulation_results") else "unknown",
-            "memory_required_gb": 2,
-            "prod_memory_required_gb": 140,
-            "prod_atom_count": 800000,
         },
     }
 
@@ -212,7 +213,8 @@ async def dock_single(pdb_id: str, compound_id: str):
     if not target_info:
         raise HTTPException(status_code=404, detail=f"Unknown target: {pdb_id}")
 
-    compound = next((c for c in DEMO_COMPOUNDS if c["id"] == compound_id), None)
+    target_compounds = TARGET_COMPOUNDS.get(pdb_id.upper(), DEMO_COMPOUNDS)
+    compound = next((c for c in target_compounds if c["id"] == compound_id), None)
     if not compound:
         raise HTTPException(status_code=404, detail=f"Unknown compound: {compound_id}")
 
@@ -226,6 +228,16 @@ async def dock_single(pdb_id: str, compound_id: str):
     if result.get("error"):
         raise HTTPException(status_code=500, detail=result["error"])
     return result
+
+
+@app.get("/api/benchmark/explicit")
+async def get_explicit_benchmark():
+    """Return real explicit-solvent benchmark data if available."""
+    from backend.config import DATA_DIR
+    bench_file = DATA_DIR / "precomputed" / "benchmark_explicit.json"
+    if not bench_file.exists():
+        return {"available": False}
+    return {"available": True, **json.loads(bench_file.read_text())}
 
 
 @app.get("/api/health")

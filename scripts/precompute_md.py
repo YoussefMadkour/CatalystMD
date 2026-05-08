@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.config import PRECOMPUTED_DIR
 from backend.compounds import DEMO_COMPOUNDS
 from backend.simulation.openmm_runner import download_pdb, run_binding_simulation
-from backend.simulation.fast_scorer import save_precomputed, _deterministic_score
+from backend.simulation.fast_scorer import run_fast_scoring, save_precomputed
 
 TOP_N = 5
 PDB_ID = "6LU7"
@@ -27,17 +27,18 @@ def main():
     pdb_path = download_pdb(PDB_ID)
     print(f"PDB downloaded: {pdb_path}")
 
+    # Score all compounds with Vina to find the top hits
     scored = []
     for c in DEMO_COMPOUNDS:
-        score = _deterministic_score(c, PDB_ID)
-        scored.append((score, c))
+        result = run_fast_scoring(str(pdb_path), PDB_ID, c)
+        scored.append((result["binding_score_kcal_mol"], c))
     scored.sort(key=lambda x: x[0])
 
     top_compounds = [c for _, c in scored[:TOP_N]]
 
     print(f"\nTop {TOP_N} compounds to simulate:")
     for i, c in enumerate(top_compounds):
-        print(f"  {i+1}. {c['name']} (estimated: {scored[i][0]:.2f} kcal/mol)")
+        print(f"  {i+1}. {c['name']} (score: {scored[i][0]:.2f} kcal/mol)")
 
     for i, compound in enumerate(top_compounds):
         print(f"\n{'='*60}")
@@ -47,14 +48,15 @@ def main():
         try:
             result = run_binding_simulation(str(pdb_path), FULL_MD_STEPS)
 
-            binding_score = _deterministic_score(compound, PDB_ID)
+            # Get the Vina score for this compound
+            vina_result = run_fast_scoring(str(pdb_path), PDB_ID, compound)
 
             precomputed = {
                 "compound_id": compound["id"],
                 "compound_name": compound["name"],
                 "smiles": compound["smiles"],
                 "known_ki_nm": compound.get("known_ki_nm"),
-                "binding_score_kcal_mol": binding_score,
+                "binding_score_kcal_mol": vina_result["binding_score_kcal_mol"],
                 "potential_energy_kj_mol": result["potential_energy_kj_mol"],
                 "wall_time_seconds": result["wall_time_seconds"],
                 "platform": result["platform"],
@@ -62,6 +64,7 @@ def main():
                 "simulation_steps": result["simulation_steps"],
                 "simulation_time_ps": result["simulation_time_ps"],
                 "method": "full_md",
+                "scoring_version": "vina_v1",
             }
 
             save_precomputed(PDB_ID, compound["id"], precomputed)
@@ -72,24 +75,6 @@ def main():
 
         except Exception as e:
             print(f"  FAILED: {e}")
-            print("  Saving fallback result...")
-
-            binding_score = _deterministic_score(compound, PDB_ID)
-            fallback = {
-                "compound_id": compound["id"],
-                "compound_name": compound["name"],
-                "smiles": compound["smiles"],
-                "known_ki_nm": compound.get("known_ki_nm"),
-                "binding_score_kcal_mol": binding_score,
-                "potential_energy_kj_mol": -850000 + binding_score * 1000,
-                "wall_time_seconds": 54.9,
-                "platform": "AMD MI300X OpenCL",
-                "atom_count": 85284,
-                "simulation_steps": FULL_MD_STEPS,
-                "simulation_time_ps": FULL_MD_STEPS * 0.002,
-                "method": "precomputed_estimate",
-            }
-            save_precomputed(PDB_ID, compound["id"], fallback)
 
     print(f"\n{'='*60}")
     print(f"Pre-computation complete. Results in: {PRECOMPUTED_DIR}")

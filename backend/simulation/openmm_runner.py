@@ -40,18 +40,29 @@ def get_platform():
 def run_binding_simulation(
     protein_pdb_path: str,
     simulation_steps: int | None = None,
+    minimization_only: bool = False,
+    solvent_padding_nm: float | None = None,
 ) -> dict:
     import openmm as mm
     import openmm.app as app
     import openmm.unit as unit
+    from pdbfixer import PDBFixer
 
     steps = simulation_steps or SIMULATION_STEPS
+    padding = solvent_padding_nm or SOLVENT_PADDING_NM
 
-    pdb = app.PDBFile(str(protein_pdb_path))
+    # Clean protein with PDBFixer
+    fixer = PDBFixer(filename=str(protein_pdb_path))
+    fixer.removeHeterogens(False)
+    fixer.missingResidues = {}
+    fixer.findMissingAtoms()
+    fixer.addMissingAtoms()
+    fixer.addMissingHydrogens(pH=7.0)
+
     forcefield = app.ForceField("amber14-all.xml", "amber14/tip3pfb.xml")
 
-    modeller = app.Modeller(pdb.topology, pdb.positions)
-    modeller.addSolvent(forcefield, model="tip3p", padding=SOLVENT_PADDING_NM * unit.nanometers)
+    modeller = app.Modeller(fixer.topology, fixer.positions)
+    modeller.addSolvent(forcefield, model="tip3p", padding=padding * unit.nanometers)
 
     atom_count = modeller.topology.getNumAtoms()
 
@@ -75,22 +86,41 @@ def run_binding_simulation(
     )
     simulation.context.setPositions(modeller.positions)
 
-    simulation.minimizeEnergy(maxIterations=1000)
-
     start = time.perf_counter()
+    simulation.minimizeEnergy(maxIterations=1000)
+    minimize_time = time.perf_counter() - start
+
+    if minimization_only:
+        state = simulation.context.getState(getEnergy=True)
+        potential_energy = state.getPotentialEnergy()
+        return {
+            "potential_energy_kj_mol": potential_energy.value_in_unit(unit.kilojoules_per_mole),
+            "simulation_steps": 0,
+            "minimization_iterations": 1000,
+            "simulation_time_ps": 0,
+            "wall_time_seconds": round(minimize_time, 2),
+            "platform": platform.getName(),
+            "atom_count": atom_count,
+            "solvent_padding_nm": padding,
+            "method": "explicit_solvent_minimization",
+        }
+
+    md_start = time.perf_counter()
     simulation.step(steps)
-    elapsed = time.perf_counter() - start
+    md_time = time.perf_counter() - md_start
 
     state = simulation.context.getState(getEnergy=True)
     potential_energy = state.getPotentialEnergy()
 
     return {
-        "potential_energy_kj_mol": potential_energy.value_in_unit(
-            unit.kilojoules_per_mole
-        ),
+        "potential_energy_kj_mol": potential_energy.value_in_unit(unit.kilojoules_per_mole),
         "simulation_steps": steps,
         "simulation_time_ps": steps * 0.002,
-        "wall_time_seconds": round(elapsed, 2),
+        "wall_time_seconds": round(minimize_time + md_time, 2),
+        "minimize_time_seconds": round(minimize_time, 2),
+        "md_time_seconds": round(md_time, 2),
         "platform": platform.getName(),
         "atom_count": atom_count,
+        "solvent_padding_nm": padding,
+        "method": "explicit_solvent_md",
     }

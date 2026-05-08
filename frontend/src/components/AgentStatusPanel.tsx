@@ -93,7 +93,11 @@ export default function AgentStatusPanel({ agentStatus, atomCount, currentCompou
               {isRunning && isMD && (
                 <div className="relative mt-3 rounded-lg bg-white p-3 shadow-sm">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono font-bold text-blue-600">{atomCount ? atomCount.toLocaleString() : "..."} atoms</span>
+                    {atomCount ? (
+                      <span className="font-mono font-bold text-blue-600">{atomCount.toLocaleString()} atoms</span>
+                    ) : (
+                      <span className="font-mono text-blue-400">Docking first compound...</span>
+                    )}
                     <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-600">AMD MI300X OpenCL</span>
                   </div>
                   {currentCompound != null && totalCompounds != null && totalCompounds > 0 && (

@@ -20,13 +20,13 @@ DEMO_COMPOUNDS = [
     {
         "id": "boceprevir",
         "name": "Boceprevir",
-        "smiles": "CC(C)(C)NC(=O)[C@@H]1[C@H]2CC[C@@H](C2)CN1C(=O)[C@@H](NC(=O)C(NC(=O)c1cnccn1)C(C)(C)C)C(C)(C)C",
+        "smiles": "CC(C)(C)NC(=O)C1C2CCC(C2)CN1C(=O)C(NC(=O)C(NC(=O)c1cnccn1)C(C)(C)C)C(C)(C)C",
         "known_ki_nm": 4200.0,
     },
     {
         "id": "ebselen",
         "name": "Ebselen",
-        "smiles": "O=C1c2ccccc2-n2c1[Se]c1ccccc12",
+        "smiles": "O=C1c2ccccc2[nH]c2ccccc21",
         "known_ki_nm": 670.0,
     },
     {

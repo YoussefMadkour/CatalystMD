@@ -12,6 +12,9 @@ interface ProteinViewerProps {
   selectedCompound?: RankingEntry | null;
   toxicityMap?: Map<string, ToxicityProfile>;
   onClearSelection?: () => void;
+  dockedPose?: string | null;
+  dockingLoading?: boolean;
+  referenceDrugName?: string;
 }
 
 const RESIDUE_COLORS: Record<string, string> = {
@@ -44,8 +47,16 @@ const RESIDUE_TIPS: Record<string, string> = {
   His164: "Holds the drug in place, stabilizes molecules in the correct position",
 };
 
+const LIGAND_NAMES: Record<string, string> = {
+  N3: "N3 Inhibitor",
+  ARS: "ARS-1620",
+  AQ4: "Erlotinib Analog",
+  A77: "A77 Inhibitor",
+};
+
 function getLigandTip(id: string) {
-  return `${id} ligand — a real drug molecule found inside the binding pocket when this protein was crystallized`;
+  const name = LIGAND_NAMES[id] || id;
+  return `${name}: the drug already bound in the pocket when this protein was crystallized. Marks where drugs attach. Your screened compounds compete for this same spot.`;
 }
 
 function parseResi(name: string): number | null {
@@ -61,6 +72,9 @@ export default function ProteinViewer({
   selectedCompound,
   toxicityMap,
   onClearSelection,
+  dockedPose,
+  dockingLoading,
+  referenceDrugName,
 }: ProteinViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<any>(null);
@@ -183,8 +197,54 @@ export default function ProteinViewer({
   }, [pdbData, bindingResidues, showLigand]);
 
   useEffect(() => {
-    if (loaded) rebuildView();
-  }, [showProtein, showResidues, showLigandToggle, focusedResidue, loaded, rebuildView]);
+    const viewer = viewerRef.current;
+    if (!viewer || !loaded || !pdbDataRef.current) return;
+
+    // If docked pose exists, do a full rebuild with docked compound
+    if (dockedPose) {
+      viewer.clear();
+      viewer.addModel(pdbDataRef.current, "pdb");
+
+      // Dim the protein
+      viewer.setStyle({}, { cartoon: { color: "spectrum", opacity: 0.5 } });
+
+      // Show binding site residues
+      for (const resName of bindingResidues) {
+        const resi = parseResi(resName);
+        if (!resi) continue;
+        const color = RESIDUE_COLORS[resName] || "0xfbbf24";
+        viewer.setStyle({ resi }, { stick: { color, radius: 0.15 }, cartoon: { color, opacity: 0.6 } });
+      }
+
+      // Hide original ligand
+      viewer.setStyle({ hetflag: true }, {});
+
+      // Add docked compound
+      viewer.addModel(dockedPose, "pdb");
+      viewer.setStyle({ model: -1 }, {
+        stick: { color: "0xff3366", radius: 0.3 },
+        sphere: { color: "0xff3366", radius: 0.4, opacity: 0.6 },
+      });
+
+      // Add 3D label for compound name
+      if (selectedCompound) {
+        viewer.addLabel(selectedCompound.compound_name, {
+          position: undefined,
+          backgroundColor: "#1e293b",
+          fontColor: "#ff3366",
+          fontSize: 11,
+          borderRadius: 4,
+          padding: 4,
+        }, { model: -1 });
+      }
+
+      viewer.zoomTo({ model: -1 }, 500);
+      viewer.spin(false);
+      viewer.render();
+    } else {
+      rebuildView();
+    }
+  }, [showProtein, showResidues, showLigandToggle, focusedResidue, loaded, rebuildView, dockedPose, selectedCompound]);
 
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -229,7 +289,14 @@ export default function ProteinViewer({
       )}
 
       {selectedCompound && onClearSelection && (
-        <CompoundOverlay compound={selectedCompound} toxicity={tox} onClose={onClearSelection} />
+        <CompoundOverlay compound={selectedCompound} toxicity={tox} onClose={onClearSelection} referenceDrugName={referenceDrugName} />
+      )}
+
+      {dockingLoading && (
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-lg border border-blue-200 bg-white/90 px-3 py-2 text-xs text-blue-600 shadow-sm backdrop-blur-sm">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+          Docking compound...
+        </div>
       )}
 
       {/* View controls */}
@@ -238,7 +305,7 @@ export default function ProteinViewer({
           <ViewToggle label="Protein" active={showProtein} color="#60a5fa" onToggle={() => setShowProtein((v) => !v)} />
           <ViewToggle label="Binding Site" active={showResidues} color="#fbbf24" onToggle={() => setShowResidues((v) => !v)} />
           {showLigand && (
-            <ViewToggle label={`Ligand (${ligandId})`} active={showLigandToggle} color="#10b981" onToggle={() => setShowLigandToggle((v) => !v)} />
+            <ViewToggle label="Pocket Reference" active={showLigandToggle} color="#10b981" onToggle={() => setShowLigandToggle((v) => !v)} />
           )}
           <ViewToggle label="Spin" active={isSpinning} color="#94a3b8" onToggle={() => setIsSpinning((v) => !v)} />
         </div>
@@ -294,7 +361,7 @@ export default function ProteinViewer({
                   focusedResidue === "__ligand" ? "scale-110 border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-500/20" : "border-emerald-500/30 bg-emerald-500/10 hover:scale-105"
                 }`}
               >
-                {`Ligand (${ligandId})`}{focusedResidue === "__ligand" ? " ×" : ""}
+                Pocket Ref.{focusedResidue === "__ligand" ? " ×" : ""}
               </button>
             </Tooltip>
           )}

@@ -20,9 +20,7 @@ export default function Header({ appState }: { appState: AppState }) {
       )}
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-sm font-black text-white shadow-md shadow-blue-500/20">
-            CM
-          </div>
+          <img src="/logo.png" alt="CatalystMD" className="h-10 w-10 rounded-xl shadow-md shadow-blue-500/20" />
           <div>
             <h1 className="text-lg font-bold tracking-tight text-slate-900">
               CatalystMD

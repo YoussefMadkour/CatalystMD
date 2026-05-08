@@ -10,6 +10,8 @@ interface BindingRankingsProps {
   onSelectCompound?: (compound: RankingEntry | null) => void;
   referenceDrugName?: string;
   referenceDrugId?: string;
+  dockingLoading?: boolean;
+  dockedPose?: string | null;
 }
 
 export default function BindingRankings({
@@ -19,6 +21,8 @@ export default function BindingRankings({
   onSelectCompound,
   referenceDrugName = "Paxlovid",
   referenceDrugId = "nirmatrelvir",
+  dockingLoading = false,
+  dockedPose,
 }: BindingRankingsProps) {
   const toxMap = new Map(
     (toxicityProfiles ?? []).map((t) => [t.compound_id, t])
@@ -173,6 +177,37 @@ export default function BindingRankings({
                           </>
                         )}
                       </div>
+                      {tox && !tox.overall_pass && (
+                        <div className="mt-2 rounded-lg bg-orange-50 px-3 py-2 text-[10px] leading-relaxed text-orange-700">
+                          <span className="font-bold">Why REVIEW:</span>{" "}
+                          {[
+                            tox.lipinski.molecular_weight > 500 && `MW ${tox.lipinski.molecular_weight} Da exceeds 500 (harder to absorb orally)`,
+                            tox.lipinski.logP > 5 && `LogP ${tox.lipinski.logP} exceeds 5 (too hydrophobic)`,
+                            tox.lipinski.H_bond_donors > 5 && `${tox.lipinski.H_bond_donors} H-bond donors exceeds 5 (reduces membrane permeability)`,
+                            tox.lipinski.H_bond_acceptors > 10 && `${tox.lipinski.H_bond_acceptors} H-bond acceptors exceeds 10 (reduces bioavailability)`,
+                          ].filter(Boolean).join(". ") || "PAINS filter flagged a potentially reactive chemical pattern."}
+                          {". "}Does not mean the drug won&apos;t work, but needs further optimization.
+                        </div>
+                      )}
+                      {dockingLoading && (
+                        <div className="mt-2 flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2">
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                          <span className="text-[11px] font-medium text-blue-600">Docking {r.compound_name} into binding pocket (~10s)...</span>
+                          <span className="text-[10px] text-slate-400">AutoDock Vina</span>
+                        </div>
+                      )}
+                      {!dockingLoading && dockedPose && (
+                        <button
+                          onClick={() => document.getElementById("protein-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                          className="mt-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] font-medium text-emerald-600 transition-colors hover:bg-emerald-100"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          View docked pose in 3D viewer
+                        </button>
+                      )}
                       {r.known_ki_nm && (
                         <div className="mt-2 text-[10px] text-slate-400">
                           Known experimental Ki: <span className="font-medium text-slate-600">{r.known_ki_nm} nM</span> (from published literature)
