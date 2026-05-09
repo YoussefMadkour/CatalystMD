@@ -39,11 +39,11 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
           {[
             {
               icon: "🎯", name: "Target Identifier",
-              desc: "Downloads the real 3D protein structure from the global Protein Data Bank. Identifies the binding pocket — the physical cavity where drugs need to sit to block the protein.",
+              desc: "Downloads the real 3D protein structure from the Protein Data Bank. Identifies the binding pocket, the physical cavity where drugs need to sit to block the protein.",
             },
             {
               icon: "⚛️", name: "Molecular Dynamics",
-              desc: "Simulates how each drug molecule physically interacts with the protein using Newton's laws of motion. Runs on AMD MI300X via OpenMM with AMBER14 force field.",
+              desc: "Docks each drug into the binding pocket using AutoDock Vina (physics-based scoring), then runs energy minimization with OpenMM on AMD MI300X. Real binding scores, not estimates.",
             },
             {
               icon: "📊", name: "Binding Scorer",
@@ -80,23 +80,23 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
               <span className="text-xs font-semibold text-slate-900">COVID-19 Protease</span>
               <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-600">Recommended first</span>
             </div>
-            <p className="mt-1 text-[10px] text-slate-400">20 compounds vs Nirmatrelvir (Paxlovid). Recommended first target.</p>
+            <p className="mt-1 text-[10px] text-slate-400">20 compounds vs Paxlovid. Top hit: Shikonin (-6.79 kcal/mol). Real Vina docking.</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3">
             <div className="flex items-center gap-2">
               <span>🧬</span>
-              <span className="text-xs font-semibold text-slate-900">KRAS G12C — Lung Cancer</span>
+              <span className="text-xs font-semibold text-slate-900">KRAS G12C, Lung Cancer</span>
               <span className="rounded bg-purple-50 px-1.5 py-0.5 text-[9px] text-purple-600">Oncology</span>
             </div>
-            <p className="mt-1 text-[10px] text-slate-400">15 compounds vs Sotorasib (Lumakras). Was &quot;undruggable&quot; for 40 years until 2021.</p>
+            <p className="mt-1 text-[10px] text-slate-400">15 compounds vs Sotorasib (Lumakras). Top hit: SML-8-73-1 (-8.59 kcal/mol).</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3">
             <div className="flex items-center gap-2">
               <span>🧬</span>
-              <span className="text-xs font-semibold text-slate-900">EGFR Kinase — Lung Cancer</span>
+              <span className="text-xs font-semibold text-slate-900">EGFR Kinase, Lung Cancer</span>
               <span className="rounded bg-purple-50 px-1.5 py-0.5 text-[9px] text-purple-600">Oncology</span>
             </div>
-            <p className="mt-1 text-[10px] text-slate-400">12 compounds vs Erlotinib (Tarceva). Classic target, $8B/yr market, 3 drug generations.</p>
+            <p className="mt-1 text-[10px] text-slate-400">12 compounds vs Erlotinib (Tarceva). Top hit: WZ4002 (-8.82 kcal/mol).</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-400">
             <span className="font-semibold text-slate-600">Tips:</span> Click residue badges to zoom in. Click compounds in rankings to inspect. Check Agent Logs for AI reasoning.

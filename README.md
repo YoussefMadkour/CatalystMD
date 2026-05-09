@@ -2,7 +2,7 @@
 
 AI-powered drug discovery platform that screens drug candidates against disease protein targets using real computational chemistry on AMD MI300X.
 
-Built for the AMD Developer Hackathon 2026 (lablab.ai). Solo build.
+Built for the AMD Developer Hackathon 2026 (lablab.ai). Solo build by Team CatalystMD.
 
 Track: AI Agents and Agentic Workflows.
 
@@ -148,6 +148,19 @@ npm run dev
 ```
 
 Without AMD GPU, the pipeline falls back to CPU for OpenMM. Vina docking works on CPU (standard). LLM requires a separate vLLM instance or can be pointed at any OpenAI-compatible API.
+
+## COVID-19 Screening Results (Real Vina Docking)
+
+| Rank | Compound | Score (kcal/mol) | vs Paxlovid | Lipinski |
+|------|----------|-----------------|-------------|----------|
+| 1 | Shikonin | -6.79 | Similar | REVIEW (PAINS) |
+| 2 | Nirmatrelvir (Paxlovid) | -6.71 | Reference | PASS |
+| 3 | Calpain Inhibitor II | -6.66 | Similar | PASS |
+| 4 | Luteolin | -6.55 | Similar | REVIEW |
+| 5 | Carmofur | -6.44 | Weaker | PASS |
+| 6 | GC-376 | -6.08 | Weaker | PASS |
+
+All scores computed by AutoDock Vina. Receptor prepared with PDBFixer, ligands prepared with Meeko/RDKit.
 
 ## Data Sources
 

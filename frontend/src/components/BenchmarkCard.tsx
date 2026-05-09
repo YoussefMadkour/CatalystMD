@@ -15,6 +15,7 @@ interface GpuMeasurement {
   wall_time_seconds: number;
   peak_gpu_pct: number;
   peak_power_watts: number;
+  peak_vram_mb: number;
   platform: string;
 }
 
@@ -92,6 +93,7 @@ export default function BenchmarkCard({ benchmark }: BenchmarkCardProps) {
                   <th className="pb-2 text-right font-medium text-slate-500">Time</th>
                   <th className="pb-2 text-right font-medium text-slate-500">GPU</th>
                   <th className="pb-2 text-right font-medium text-slate-500">Power</th>
+                  <th className="pb-2 text-right font-medium text-slate-500">VRAM</th>
                 </tr>
               </thead>
               <tbody>
@@ -107,6 +109,7 @@ export default function BenchmarkCard({ benchmark }: BenchmarkCardProps) {
                       <span className="font-mono font-bold text-emerald-600">{m.peak_gpu_pct}%</span>
                     </td>
                     <td className="py-2 text-right font-mono text-slate-700">{m.peak_power_watts}W</td>
+                    <td className="py-2 text-right font-mono text-slate-700">{m.peak_vram_mb ? `${(m.peak_vram_mb / 1024).toFixed(0)}GB` : "N/A"}</td>
                   </tr>
                 ))}
               </tbody>
