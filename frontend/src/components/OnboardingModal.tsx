@@ -23,9 +23,9 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
           <div className="rounded-xl bg-slate-50 p-4">
             <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">The AMD Story</div>
             <p className="text-xs leading-relaxed text-slate-400">
-              A full explicit-solvent simulation of COVID-19 protease requires
-              <span className="font-bold text-blue-600"> up to 140GB GPU memory</span> at production scale.
-              AMD MI300X has 192GB HBM3, making it one of the few single GPUs that can handle this.
+              CatalystMD runs both the AI model (Qwen 2.5-7B) and physics simulations (OpenMM)
+              on a <span className="font-bold text-blue-600">single AMD MI300X GPU (192GB HBM3)</span>.
+              Our benchmarks show 100% GPU utilization across all protein targets.
             </p>
           </div>
         </div>

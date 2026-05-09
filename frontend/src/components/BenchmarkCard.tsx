@@ -135,10 +135,10 @@ export default function BenchmarkCard({ benchmark }: BenchmarkCardProps) {
 
       {/* Production scale note */}
       <div className="rounded-xl bg-slate-50 p-3">
-        <div className="text-xs font-bold text-slate-700">Production Scale</div>
+        <div className="text-xs font-bold text-slate-700">Why AMD MI300X</div>
         <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-          At full resolution (5nm explicit solvent, ~800K atoms), each simulation requires ~140GB GPU memory.
-          AMD MI300X (192GB HBM3) can run this on a single GPU. Most other GPUs would need multi-GPU setups, adding communication overhead and cost.
+          MI300X's 192GB HBM3 runs both the Qwen 2.5-7B LLM (via vLLM) and OpenMM physics simulations simultaneously on a single GPU.
+          Larger drug discovery systems (300K-800K atoms with 5nm explicit solvent) benefit from high-memory GPUs to avoid multi-GPU communication overhead.
         </p>
       </div>
     </div>

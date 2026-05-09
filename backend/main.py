@@ -249,7 +249,7 @@ async def get_gpu_measurements():
             "wall_time_seconds": info.get("wall_time_seconds", 0),
             "peak_gpu_pct": info.get("peak_gpu_utilization_pct", 0),
             "peak_power_watts": info.get("peak_power_watts", 0),
-            "peak_vram_mb": info.get("peak_vram_mb", 0),
+            "vram_delta_mb": info.get("vram_delta_mb", 0),
             "platform": sim.get("platform", "unknown"),
             "method": sim.get("method", "unknown"),
         })

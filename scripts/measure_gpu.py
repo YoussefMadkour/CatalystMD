@@ -157,20 +157,21 @@ def main():
 
         pdb_path = download_pdb(pdb_id)
 
-        # Before
+        # Before (capture baseline VRAM with vLLM running)
         before = capture_gpu_metrics()
+        vram_before = before.get("vram_used_mb", 0)
 
         # Start GPU monitoring
         stop_event, snapshots = monitor_gpu_during(999, interval=3)
 
-        # Run explicit solvent minimization
-        print(f"  Running explicit solvent minimization (1nm padding)...", flush=True)
+        # Run explicit solvent minimization with 2nm padding for higher atom counts
+        print(f"  Running explicit solvent minimization (2nm padding)...", flush=True)
         sim_start = time.perf_counter()
         try:
             result = run_binding_simulation(
                 str(pdb_path),
                 minimization_only=True,
-                solvent_padding_nm=1.0,
+                solvent_padding_nm=2.0,
             )
             sim_time = time.perf_counter() - sim_start
             success = True
@@ -189,7 +190,9 @@ def main():
         # Compute peak metrics from snapshots
         peak_gpu_pct = max((s.get("gpu_utilization_pct", 0) for s in snapshots), default=0)
         peak_power = max((s.get("power_watts", 0) for s in snapshots), default=0)
-        peak_vram = max((s.get("vram_used_mb", 0) for s in snapshots), default=0)
+        peak_vram_total = max((s.get("vram_used_mb", 0) for s in snapshots), default=0)
+        # Delta = simulation VRAM only (subtract vLLM baseline)
+        vram_delta_mb = peak_vram_total - vram_before if vram_before > 0 else 0
 
         measurement = {
             "protein": name,
@@ -200,7 +203,9 @@ def main():
             "snapshots": snapshots,
             "peak_gpu_utilization_pct": peak_gpu_pct,
             "peak_power_watts": peak_power,
-            "peak_vram_mb": peak_vram,
+            "peak_vram_mb": peak_vram_total,
+            "vram_delta_mb": max(0, vram_delta_mb),
+            "vram_baseline_mb": vram_before,
             "simulation": result if success else {"error": result.get("error")},
             "wall_time_seconds": round(sim_time, 2),
         }
@@ -213,7 +218,7 @@ def main():
             print(f"  Platform: {result.get('platform', 'N/A')}")
             print(f"  Peak GPU%: {peak_gpu_pct}%")
             print(f"  Peak Power: {peak_power}W")
-            print(f"  Peak VRAM: {peak_vram}MB")
+            print(f"  Simulation VRAM: {vram_delta_mb:.0f}MB (delta from baseline)")
         else:
             print(f"  FAILED: {result.get('error')}")
 
