@@ -149,17 +149,19 @@ npm run dev
 
 Without AMD GPU, the pipeline falls back to CPU for OpenMM. Vina docking works on CPU (standard). LLM requires a separate vLLM instance or can be pointed at any OpenAI-compatible API.
 
-## COVID-19 Screening Results (Real Vina Docking)
+## EGFR Lung Cancer Results (Real Vina Docking)
 
-| Rank | Compound | Score (kcal/mol) | vs Paxlovid | Lipinski |
-|------|----------|-----------------|-------------|----------|
-| 1 | Shikonin | -6.79 | Similar | REVIEW (PAINS) |
-| 2 | Nirmatrelvir (Paxlovid) | -6.71 | Reference | PASS |
-| 3 | Calpain Inhibitor II | -6.66 | Similar | PASS |
-| 4 | Luteolin | -6.55 | Similar | REVIEW |
-| 5 | Carmofur | -6.44 | Weaker | PASS |
-| 6 | GC-376 | -6.08 | Weaker | PASS |
+| Rank | Compound | Score (kcal/mol) | vs Erlotinib (Tarceva) | Lipinski |
+|------|----------|-----------------|----------------------|----------|
+| 1 | WZ4002 | -8.82 | Stronger | PASS |
+| 2 | Lapatinib (Tykerb) | -8.77 | Stronger | REVIEW |
+| 3 | Afatinib (Gilotrif) | -8.70 | Stronger | PASS |
+| 4 | CO-1686 (Rociletinib) | -8.59 | Stronger | PASS |
+| 5 | Dacomitinib (Vizimpro) | -8.24 | Stronger | REVIEW |
+| 6 | Gefitinib (Iressa) | -8.10 | Stronger | PASS |
+| 11 | Erlotinib (Tarceva) | -7.20 | Reference (FDA approved) | - |
 
+10 of 12 screened compounds show stronger predicted binding than the current FDA-approved drug.
 All scores computed by AutoDock Vina. Receptor prepared with PDBFixer, ligands prepared with Meeko/RDKit.
 
 ## Data Sources
