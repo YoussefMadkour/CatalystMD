@@ -90,6 +90,17 @@ export async function fetchCompounds(pdbId: string = "6LU7") {
   return data.compounds;
 }
 
+export async function fetchGpuMeasurements(): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/benchmark/gpu`);
+    const data = await res.json();
+    if (!data.available) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchExplicitBenchmark(): Promise<any | null> {
   try {
     const res = await fetch(`${API_BASE}/api/benchmark/explicit`);

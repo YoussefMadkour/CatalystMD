@@ -230,6 +230,31 @@ async def dock_single(pdb_id: str, compound_id: str):
     return result
 
 
+@app.get("/api/benchmark/gpu")
+async def get_gpu_measurements():
+    """Return GPU measurement data if available."""
+    from backend.config import DATA_DIR
+    gpu_file = DATA_DIR / "gpu_measurements" / "gpu_measurements.json"
+    if not gpu_file.exists():
+        return {"available": False}
+    data = json.loads(gpu_file.read_text())
+    # Return summary per target (not all snapshots)
+    summary = []
+    for pdb_id, info in data.get("targets", {}).items():
+        sim = info.get("simulation", {})
+        summary.append({
+            "pdb_id": pdb_id,
+            "protein": info.get("protein", pdb_id),
+            "atom_count": sim.get("atom_count", 0),
+            "wall_time_seconds": info.get("wall_time_seconds", 0),
+            "peak_gpu_pct": info.get("peak_gpu_utilization_pct", 0),
+            "peak_power_watts": info.get("peak_power_watts", 0),
+            "platform": sim.get("platform", "unknown"),
+            "method": sim.get("method", "unknown"),
+        })
+    return {"available": True, "measurements": summary}
+
+
 @app.get("/api/benchmark/explicit")
 async def get_explicit_benchmark():
     """Return real explicit-solvent benchmark data if available."""
