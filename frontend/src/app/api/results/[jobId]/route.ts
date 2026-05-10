@@ -18,35 +18,30 @@ const GPU_BENCHMARKS: Record<string, any> = {
   "1HIV": { atom_count: 45635, simulation_time_seconds: 456, platform: "OpenCL", total_compounds: 10, method: "vina_docking" },
 };
 
-// Track simulated progress per job
-const jobProgress = new Map<string, { step: number; startTime: number }>();
-
 const AGENT_SEQUENCE = ["identify_target", "simulate", "score_binding", "screen_toxicity", "generate_brief"];
 const STEP_DURATION_MS = 800;
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
-  const pdbId = jobId.replace("precomputed_", "");
+  // jobId format: precomputed_6LU7_1715367000000
+  const parts = jobId.split("_");
+  const pdbId = parts[1] || jobId;
   const data = RESULTS[pdbId];
 
   if (!data) {
     return NextResponse.json({ status: "failed", error: "Unknown target" });
   }
 
-  // Simulate progressive agent completion
-  if (!jobProgress.has(jobId)) {
-    jobProgress.set(jobId, { step: 0, startTime: Date.now() });
-  }
-
-  const progress = jobProgress.get(jobId)!;
-  const elapsed = Date.now() - progress.startTime;
+  // Use a "t" query param as the start timestamp to simulate progress
+  // The /api/run endpoint embeds the start time in the job_id
+  const startTime = parseInt(jobId.split("_")[2] || "0", 10);
+  const elapsed = startTime > 0 ? Date.now() - startTime : 999999;
   const currentStep = Math.min(Math.floor(elapsed / STEP_DURATION_MS), AGENT_SEQUENCE.length);
 
-  if (currentStep < AGENT_SEQUENCE.length) {
-    // Still running — return partial status
+  if (startTime > 0 && currentStep < AGENT_SEQUENCE.length) {
     const agentStatus: Record<string, string> = {};
     for (let i = 0; i < AGENT_SEQUENCE.length; i++) {
       if (i < currentStep) agentStatus[AGENT_SEQUENCE[i]] = "completed";
@@ -70,8 +65,7 @@ export async function GET(
     });
   }
 
-  // Completed — clean up and return full results
-  jobProgress.delete(jobId);
+  // Completed — return full results
 
   const bench = GPU_BENCHMARKS[pdbId] || { atom_count: 0, simulation_time_seconds: 0, platform: "OpenCL", total_compounds: 0, method: "vina_docking" };
 
