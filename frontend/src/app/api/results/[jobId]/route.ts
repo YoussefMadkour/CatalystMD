@@ -11,11 +11,13 @@ const RESULTS: Record<string, any> = {
   "1HIV": results1HIV,
 };
 
+// Quick screen times: Vina docking (~5-10s/compound) + OpenMM minimization
+// These are the actual docking run times, NOT the explicit solvent benchmark times
 const GPU_BENCHMARKS: Record<string, any> = {
-  "6LU7": { atom_count: 76038, simulation_time_seconds: 960, platform: "OpenCL", total_compounds: 20, method: "vina_docking" },
-  "6OIM": { atom_count: 22620, simulation_time_seconds: 120, platform: "OpenCL", total_compounds: 15, method: "vina_docking" },
-  "1M17": { atom_count: 119907, simulation_time_seconds: 1608, platform: "OpenCL", total_compounds: 12, method: "vina_docking" },
-  "1HIV": { atom_count: 45635, simulation_time_seconds: 456, platform: "OpenCL", total_compounds: 10, method: "vina_docking" },
+  "6LU7": { atom_count: 76038, simulation_time_seconds: 174, platform: "OpenCL", total_compounds: 20, method: "vina_docking" },
+  "6OIM": { atom_count: 22620, simulation_time_seconds: 108, platform: "OpenCL", total_compounds: 15, method: "vina_docking" },
+  "1M17": { atom_count: 119907, simulation_time_seconds: 102, platform: "OpenCL", total_compounds: 12, method: "vina_docking" },
+  "1HIV": { atom_count: 45635, simulation_time_seconds: 78, platform: "OpenCL", total_compounds: 10, method: "vina_docking" },
 };
 
 const AGENT_SEQUENCE = ["identify_target", "simulate", "score_binding", "screen_toxicity", "generate_brief"];

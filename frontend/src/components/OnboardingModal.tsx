@@ -20,7 +20,7 @@ export default function OnboardingModal({ onDismiss }: OnboardingModalProps) {
             <span className="font-semibold text-blue-600"> molecular dynamics simulation</span> on
             AMD MI300X hardware. This demo serves
             <span className="font-semibold text-slate-600"> precomputed results from real AutoDock Vina docking and OpenMM simulations</span> originally
-            run on AMD MI300X.
+            run on AMD MI300X for the AMD Developer Hackathon.
           </p>
           <div className="rounded-xl bg-slate-50 p-4">
             <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">The AMD Story</div>
