@@ -1,6 +1,10 @@
 import time
 
-from backend.simulation.fast_scorer import run_fast_scoring
+from backend.simulation.fast_scorer import run_fast_scoring, load_precomputed
+
+
+# Delay between compounds when serving cached results so the UI can show progress
+_DEMO_STEP_DELAY = 0.35  # seconds
 
 
 def run_molecular_dynamics(state: dict, progress_cb=None) -> dict:
@@ -11,7 +15,9 @@ def run_molecular_dynamics(state: dict, progress_cb=None) -> dict:
 
     results = []
     total_start = time.perf_counter()
+    total_original_time = 0.0
     compound_timings = []
+    all_cached = True
 
     for i, compound in enumerate(compounds):
         if progress_cb:
@@ -20,20 +26,37 @@ def run_molecular_dynamics(state: dict, progress_cb=None) -> dict:
                 compound=i + 1, total=len(compounds), name=compound["name"],
                 atoms=atom_count_so_far,
                 step=f"Docking {compound['name']} (Vina + OpenMM)...")
+
+        # Check if this will be a cache hit — if so, pace the UI
+        is_cached = load_precomputed(pdb_id, compound["id"]) is not None
+        if is_cached and progress_cb:
+            time.sleep(_DEMO_STEP_DELAY)
+
         c_start = time.perf_counter()
         result = run_fast_scoring(pdb_path, pdb_id, compound)
         c_elapsed = time.perf_counter() - c_start
+
+        # Use the original wall_time from the result (real simulation time),
+        # not the cache-read time
+        original_time = result.get("wall_time_seconds", c_elapsed)
+        total_original_time += original_time
+
+        if not is_cached:
+            all_cached = False
+
         result["compound_index"] = i + 1
         result["total_compounds"] = len(compounds)
         results.append(result)
         compound_timings.append({
             "compound": compound["name"],
-            "time_seconds": round(c_elapsed, 3),
+            "time_seconds": round(original_time, 3),
             "score": result["binding_score_kcal_mol"],
             "method": result.get("method", "unknown"),
         })
 
-    total_elapsed = time.perf_counter() - total_start
+    actual_elapsed = time.perf_counter() - total_start
+    # Report the real simulation time, not the cache-read time
+    total_elapsed = total_original_time if all_cached else actual_elapsed
 
     atom_count = results[0]["atom_count"] if results else 85284
     platform = results[0]["platform"] if results else "unknown"

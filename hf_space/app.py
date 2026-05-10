@@ -92,11 +92,22 @@ def run_demo(pdb_id, progress=gr.Progress()):
     rankings = results.get("binding_rankings", {}).get("rankings", [])
     ref_name = results.get("binding_rankings", {}).get("reference_drug_name", target["reference_drug"])
 
+    # Build toxicity lookup for Lipinski column
+    tox_profiles = results.get("toxicity_profiles", [])
+    tox_map = {t["compound_id"]: t for t in tox_profiles}
+
     rankings_md = f"| Rank | Compound | Score (kcal/mol) | vs {ref_name} | Lipinski |\n|------|----------|-----------------|-------------|----------|\n"
     for r in rankings:
         vs = r.get("vs_reference", "similar")
         vs_display = "STRONGER" if vs == "stronger" else ("Similar" if vs == "similar" else "Weaker")
-        rankings_md += f"| {r['rank']} | {r['compound_name']} | {r['binding_score_kcal_mol']:.2f} | {vs_display} | - |\n"
+        tox = tox_map.get(r.get("compound_id"), {})
+        lip = tox.get("lipinski", {})
+        violations = lip.get("lipinski_violations")
+        if violations is not None:
+            lip_display = f"{violations}/4 {'PASS' if tox.get('overall_pass') else 'REVIEW'}"
+        else:
+            lip_display = "-"
+        rankings_md += f"| {r['rank']} | {r['compound_name']} | {r['binding_score_kcal_mol']:.2f} | {vs_display} | {lip_display} |\n"
 
     progress(0.6, desc="Loading toxicity screening...")
 

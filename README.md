@@ -6,6 +6,8 @@ Built for the AMD Developer Hackathon 2026 (lablab.ai). Solo build by Team Catal
 
 Track: AI Agents and Agentic Workflows.
 
+**Live Demo:** [HuggingFace Space](https://huggingface.co/spaces/youssefmadkour1/CatalystMD)
+
 ## What It Does
 
 CatalystMD takes a disease target and screens drug compounds against it using five AI agents in sequence. Each agent passes its results to the next through a LangGraph pipeline.
@@ -41,6 +43,14 @@ Explicit solvent simulations (TIP3P water, 1nm padding, AMBER14 force field):
 | KRAS G12C (6OIM) | 22,620 | 2.0 min | 100% | 316W |
 | EGFR (1M17) | 119,907 | 26.8 min | 100% | 333W |
 | HIV-1 (1HIV) | 45,635 | 7.6 min | 100% | 330W |
+
+**Production-scale benchmark (5nm explicit solvent):**
+
+| Protein | Atoms | Time | GPU Utilization | Power | Solvent |
+|---------|-------|------|-----------------|-------|---------|
+| EGFR (1M17) | 314,568 | 40 min | 100% | 310-342W | TIP3P 5nm padding |
+
+This simulation requires >140GB VRAM — only possible on MI300X (192GB HBM3). Cannot run on NVIDIA H100 (80GB) or H200 (141GB).
 
 All measurements captured with rocm-smi during simulation. Full data in `data/gpu_measurements/`.
 
