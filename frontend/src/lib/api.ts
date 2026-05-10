@@ -1,6 +1,6 @@
 import type { PipelineResults, AgentStatusMap } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export async function startRun(pdbId: string = "6LU7"): Promise<string> {
   const res = await fetch(`${API_BASE}/api/run`, {

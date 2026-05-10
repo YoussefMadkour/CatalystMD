@@ -308,7 +308,7 @@ function BriefTab({ brief }: { brief?: string }) {
   if (!brief) return <div className="py-8 text-center text-sm text-slate-500">No brief generated</div>;
 
   function handleDownload() {
-    const blob = new Blob([brief], { type: "text/plain" });
+    const blob = new Blob([brief!], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

@@ -15,6 +15,7 @@ export interface TargetAnalysis {
   protein_name: string;
   pdb_id: string;
   pdb_path: string;
+  ligand_id?: string;
   resolution_angstroms: number;
   pdb_atom_count: number;
   binding_site: BindingSite;

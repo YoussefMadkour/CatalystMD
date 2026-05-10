@@ -1,0 +1,14 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({
+    available: true,
+    atoms: 314568,
+    time_seconds: 2395.91,
+    time_hours: 0.67,
+    platform: "OpenCL",
+    padding_nm: 5.0,
+    protein: "EGFR Kinase (1M17)",
+    method: "explicit_solvent_minimization",
+  });
+}
