@@ -19,7 +19,31 @@ const GPU_BENCHMARKS: Record<string, any> = {
 };
 
 const AGENT_SEQUENCE = ["identify_target", "simulate", "score_binding", "screen_toxicity", "generate_brief"];
-const STEP_DURATION_MS = 800;
+
+// Per-step durations in ms — simulate step gets much more time
+const STEP_DURATIONS: Record<string, number> = {
+  identify_target: 1200,
+  simulate: 0,       // dynamic — calculated from compound count
+  score_binding: 1500,
+  screen_toxicity: 800,
+  generate_brief: 1500,
+};
+const COMPOUND_DELAY_MS = 400; // time per compound during simulate
+
+function getStepTimings(pdbId: string) {
+  const bench = GPU_BENCHMARKS[pdbId];
+  const compoundCount = bench?.total_compounds || 10;
+  const simulateDuration = compoundCount * COMPOUND_DELAY_MS;
+
+  const timings: { agent: string; start: number; end: number }[] = [];
+  let cursor = 0;
+  for (const agent of AGENT_SEQUENCE) {
+    const duration = agent === "simulate" ? simulateDuration : (STEP_DURATIONS[agent] || 1000);
+    timings.push({ agent, start: cursor, end: cursor + duration });
+    cursor += duration;
+  }
+  return timings;
+}
 
 export async function GET(
   request: NextRequest,
@@ -35,25 +59,38 @@ export async function GET(
     return NextResponse.json({ status: "failed", error: "Unknown target" });
   }
 
-  // Use a "t" query param as the start timestamp to simulate progress
-  // The /api/run endpoint embeds the start time in the job_id
-  const startTime = parseInt(jobId.split("_")[2] || "0", 10);
+  const startTime = parseInt(parts[2] || "0", 10);
   const elapsed = startTime > 0 ? Date.now() - startTime : 999999;
-  const currentStep = Math.min(Math.floor(elapsed / STEP_DURATION_MS), AGENT_SEQUENCE.length);
+  const timings = getStepTimings(pdbId);
+  const totalDuration = timings[timings.length - 1].end;
 
-  if (startTime > 0 && currentStep < AGENT_SEQUENCE.length) {
+  if (startTime > 0 && elapsed < totalDuration) {
+    // Find which agent is currently running
     const agentStatus: Record<string, string> = {};
-    for (let i = 0; i < AGENT_SEQUENCE.length; i++) {
-      if (i < currentStep) agentStatus[AGENT_SEQUENCE[i]] = "completed";
-      else if (i === currentStep) agentStatus[AGENT_SEQUENCE[i]] = "running";
-      else agentStatus[AGENT_SEQUENCE[i]] = "pending";
+    let currentAgent = AGENT_SEQUENCE[AGENT_SEQUENCE.length - 1];
+    for (const t of timings) {
+      if (elapsed < t.start) {
+        agentStatus[t.agent] = "pending";
+      } else if (elapsed < t.end) {
+        agentStatus[t.agent] = "running";
+        currentAgent = t.agent;
+      } else {
+        agentStatus[t.agent] = "completed";
+      }
     }
 
     const bench = GPU_BENCHMARKS[pdbId];
     const compoundTotal = bench?.total_compounds || 10;
-    const simulating = AGENT_SEQUENCE[currentStep] === "simulate";
-    const compoundProgress = simulating
-      ? { current: Math.min(Math.floor((elapsed - STEP_DURATION_MS) / 200) + 1, compoundTotal), total: compoundTotal, name: "Screening..." }
+    const isSimulating = currentAgent === "simulate";
+    const simTiming = timings.find(t => t.agent === "simulate")!;
+    const simElapsed = Math.max(0, elapsed - simTiming.start);
+    const currentCompound = Math.min(Math.floor(simElapsed / COMPOUND_DELAY_MS) + 1, compoundTotal);
+
+    const compoundNames = data.binding_rankings.rankings.map((r: any) => r.compound_name);
+    const compoundName = compoundNames[Math.min(currentCompound - 1, compoundNames.length - 1)] || "Screening...";
+
+    const compoundProgress = isSimulating
+      ? { current: currentCompound, total: compoundTotal, name: compoundName }
       : undefined;
 
     return NextResponse.json({
@@ -61,7 +98,15 @@ export async function GET(
       agent_status: agentStatus,
       compound_progress: compoundProgress,
       atom_count: bench?.atom_count,
-      current_step: simulating ? `Docking compound (Vina + OpenMM)...` : undefined,
+      current_step: isSimulating
+        ? `Docking ${compoundName} (Vina + OpenMM)...`
+        : currentAgent === "identify_target"
+          ? "Downloading PDB structure..."
+          : currentAgent === "score_binding"
+            ? "Ranking compounds by binding affinity..."
+            : currentAgent === "screen_toxicity"
+              ? "Screening Lipinski + PAINS..."
+              : "Generating discovery brief...",
     });
   }
 
